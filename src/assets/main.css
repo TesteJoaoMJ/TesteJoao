@@ -35,8 +35,52 @@ body {
   border-radius: 8px;
 }
 
-input, select, textarea {
-  background-color: var(--bg-color);
+/* Estilização Geral de Inputs e Selects */
+.input-search, .input-select {
+  background-color: var(--card-bg) !important; /* Usando card-bg para dar contraste com o fundo */
   color: var(--text-color);
   border: 1px solid var(--border-color);
+  padding: 0.5rem;
+  border-radius: 6px;
+  outline: none;
+}
+
+/* Estilização da Tabela */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+.data-table th {
+  background-color: var(--bg-color); /* Cabeçalho levemente diferente */
+  border-bottom: 2px solid var(--border-color);
+  padding: 12px;
+  text-align: left;
+}
+
+.data-table td {
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px;
+  background-color: var(--card-bg);
+}
+
+/* Ajuste para os botões de ícone (SVG) */
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-color); /* O ícone herda a cor do texto do tema */
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.btn-icon:hover {
+  opacity: 1;
+}
+
+.btn-icon svg {
+  width: 20px;
+  height: 20px;
 }

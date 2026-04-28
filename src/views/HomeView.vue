@@ -773,6 +773,5 @@ const imprimirDossie = (c: any) => {
   background-color: var(--card-bg); /* Usa a variável dinâmica */
   color: var(--color); /* Usa a variável dinâmica */
   padding: 1rem;
-  border-bottom: 1px solid var(--primary-color);
 }
 </style>
