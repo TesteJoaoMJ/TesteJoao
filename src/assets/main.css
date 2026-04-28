@@ -1,24 +1,26 @@
+/* src/assets/styles/themes.css */
 
+/* src/assets/styles/main.css ou themes.css */
 :root {
-  /* Cores Modo Claro */
   --bg-primary: #ffffff;
-  --bg-secondary: #f4f4f7;
-  --text-primary: #2d3436;
-  --text-secondary: #636e72;
-  --border-color: #dfe6e9;
-  --accent-color: #3498db;
-  --card-bg: #ffffff;
+  --bg-card: #ffffff;
+  --bg-input: #f9f9f9;
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --border-color: #e0e0e0;
+  --table-hover: #f5f5f5;
+  --accent: #3498db;
 }
 
 [data-theme='dark'] {
-  /* Cores Modo Escuro */
   --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
+  --bg-card: #1e1e1e;
+  --bg-input: #2d2d2d;
   --text-primary: #e0e0e0;
-  --text-secondary: #b0b0b0;
+  --text-secondary: #a0a0a0;
   --border-color: #333333;
-  --accent-color: #3498db;
-  --card-bg: #1e1e1e;
+  --table-hover: #2a2a2a;
+  --accent: #3498db;
 }
 
 body {

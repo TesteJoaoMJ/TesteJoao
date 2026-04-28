@@ -41,6 +41,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '../lib/supabase'
+import { useTheme } from '../composables/useDarkMode'
+const { theme, toggleTheme } = useTheme()
 
 const router = useRouter()
 const email = ref('')
@@ -115,7 +117,7 @@ const handleLogin = async () => {
 }
 
 .login-card {
-  background: white;
+  background: var(--bg-card);
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -126,11 +128,11 @@ const handleLogin = async () => {
 
 .login-card h2 {
   margin-bottom: 0.5rem;
-  color: #2c3e50;
+  color: var(--text-primary);
 }
 
 .login-card p {
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 1.5rem;
 }
 
@@ -148,14 +150,16 @@ const handleLogin = async () => {
 .input-group input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ccc;
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
 }
 
 button {
   width: 100%;
   padding: 0.75rem;
-  background-color: #42b983;
+  background-color: var(--accent);
   color: white;
   border: none;
   border-radius: 4px;
@@ -165,7 +169,7 @@ button {
 }
 
 button:disabled {
-  background-color: #a0d8c0;
+  background-color: var(--bg-input);
   cursor: not-allowed;
 }
 
