@@ -484,3 +484,5 @@ button {
 .badge.desligado .dot {
   background: var(--danger);
 }
+.timeline-filters { display: flex; gap: 10px; padding: 15px; background: var(--bg-surface); border-bottom: 1px solid var(--border); }
+.input-search-sm, .input-select-sm { padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.85rem; }
