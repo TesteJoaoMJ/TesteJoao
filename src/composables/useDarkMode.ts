@@ -1,29 +1,24 @@
-import { ref, onMounted } from 'vue';
+// src/composables/useTheme.ts
+import { ref, onMounted } from 'vue'
 
-const isDark = ref(false);
+const theme = ref<'light' | 'dark'>('light')
 
-export function useDarkMode() {
-  const toggleDark = () => {
-    isDark.value = !isDark.value;
-    localStorage.setItem('user-theme', isDark.value ? 'dark' : 'light');
-    updateTheme();
-  };
+export function useTheme() {
+  const toggleTheme = () => {
+    theme.value = theme.value === 'light' ? 'dark' : 'light'
+    document.documentElement.setAttribute('data-theme', theme.value)
+    localStorage.setItem('user-theme', theme.value)
+  }
 
-  const updateTheme = () => {
-    if (isDark.value) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+  const initTheme = () => {
+    const savedTheme = localStorage.getItem('user-theme') as 'light' | 'dark' | null
+    if (savedTheme) {
+      theme.value = savedTheme
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      theme.value = 'dark'
     }
-  };
+    document.documentElement.setAttribute('data-theme', theme.value)
+  }
 
-  onMounted(() => {
-    const savedTheme = localStorage.getItem('user-theme');
-    // Verifica preferência salva ou do sistema
-    isDark.value = savedTheme === 'dark' || 
-      (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    updateTheme();
-  });
-
-  return { isDark, toggleDark };
+  return { theme, toggleTheme, initTheme }
 }

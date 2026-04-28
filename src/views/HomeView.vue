@@ -21,8 +21,9 @@
             {{ userRole.toUpperCase() }}
           </span>
         </div>
-        <button @click="toggleDark" class="btn-white">
-          {{ isDark ? 'Modo Claro ☀️' : 'Modo Escuro 🌙' }}
+        <button @click="toggleTheme" class="theme-btn">
+            <span v-if="theme === 'light'">🌙 Modo Escuro</span>
+            <span v-else>☀️ Modo Claro</span>
         </button>
         <button class="btn-outline" @click="handleLogout">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -324,8 +325,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '../lib/supabase'
-import { useDarkMode } from '@/composables/useDarkMode';
-const { isDark, toggleDark } = useDarkMode();
+import { useTheme } from '../composables/useDarkMode'
+const { theme, toggleTheme } = useTheme()
 
 const router = useRouter()
 const userRole = ref<string>('user')
@@ -769,9 +770,110 @@ const imprimirDossie = (c: any) => {
 <style scoped>
 @import '../assets/homecss.css';
 
-.header {
-  background-color: var(--card-bg); /* Usa a variável dinâmica */
-  color: var(--color); /* Usa a variável dinâmica */
-  padding: 1rem;
+.theme-btn {
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: all 0.2s;
 }
+.card-grid {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* Linha de Filtros */
+.filter-row {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Inputs e Selects */
+.input-search, 
+.input-select {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 10px 15px;
+  border-radius: 6px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.input-search:focus, 
+.input-select:focus {
+  border-color: var(--accent);
+}
+
+/* Tabela */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--text-primary);
+}
+
+.data-table th {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 2px solid var(--border-color);
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.data-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.data-table tbody tr:hover {
+  background-color: var(--table-hover);
+}
+
+/* Botões de Ação */
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-icon:hover {
+  background-color: var(--bg-input);
+  color: var(--accent);
+}
+
+.btn-icon.danger:hover {
+  color: #e74c3c;
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+/* Alinhamentos */
+.align-right {
+  text-align: right;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 </style>

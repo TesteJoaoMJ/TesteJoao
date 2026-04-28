@@ -1,86 +1,42 @@
-/* Definições de cores padrão (Light Mode) */
+
 :root {
-  --bg-color: #ffffff;
-  --text-color: #1a1a1a;
-  --card-bg: #f4f4f7;
-  --border-color: #e2e8f0;
-  --primary-color: #3b82f6;
-  --sidebar-bg: #1e293b;
-  --sidebar-text: #ffffff;
+  /* Cores Modo Claro */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f4f4f7;
+  --text-primary: #2d3436;
+  --text-secondary: #636e72;
+  --border-color: #dfe6e9;
+  --accent-color: #3498db;
+  --card-bg: #ffffff;
 }
 
-/* Definições para Dark Mode - Ativado pela classe .dark no HTML */
-.dark {
-  --bg-color: #0f172a; /* Azul muito escuro/preto */
-  --text-color: #f8fafc; /* Branco acinzentado */
-  --card-bg: #1e293b; /* Azul ardósia escuro */
-  --border-color: #334155;
-  --primary-color: #60a5fa;
+[data-theme='dark'] {
+  /* Cores Modo Escuro */
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --border-color: #333333;
+  --accent-color: #3498db;
+  --card-bg: #1e1e1e;
 }
 
-/* Aplicação Global */
 body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
   margin: 0;
-  font-family: 'Inter', sans-serif;
+  font-family: sans-serif;
 }
 
-/* Exemplo de como aplicar nos componentes */
+/* Exemplo de aplicação em elementos comuns */
 .card {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
-  padding: 1.5rem;
-  border-radius: 8px;
 }
 
-/* Estilização Geral de Inputs e Selects */
-.input-search, .input-select {
-  background-color: var(--card-bg) !important; /* Usando card-bg para dar contraste com o fundo */
-  color: var(--text-color);
+input, select, textarea {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   border: 1px solid var(--border-color);
-  padding: 0.5rem;
-  border-radius: 6px;
-  outline: none;
-}
-
-/* Estilização da Tabela */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: var(--card-bg);
-  color: var(--text-color);
-}
-
-.data-table th {
-  background-color: var(--bg-color); /* Cabeçalho levemente diferente */
-  border-bottom: 2px solid var(--border-color);
-  padding: 12px;
-  text-align: left;
-}
-
-.data-table td {
-  border-bottom: 1px solid var(--border-color);
-  padding: 12px;
-  background-color: var(--card-bg);
-}
-
-/* Ajuste para os botões de ícone (SVG) */
-.btn-icon {
-  background: transparent;
-  border: none;
-  color: var(--text-color); /* O ícone herda a cor do texto do tema */
-  cursor: pointer;
-  opacity: 0.8;
-  transition: opacity 0.2s;
-}
-
-.btn-icon:hover {
-  opacity: 1;
-}
-
-.btn-icon svg {
-  width: 20px;
-  height: 20px;
 }
