@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container header">
     <header class="navbar">
       <div class="navbar-left">
         <div class="seletor-grupo">
@@ -11,17 +11,19 @@
           </select>
         </div>
       </div>
-
       <div class="navbar-right">
+        
+        
+        <div class="nav-divider"></div>
         <div class="user-profile">
           <span class="user-email">{{ usuarioAtual?.email || 'Carregando...' }}</span>
           <span v-if="userRole" class="badge" :class="userRole === 'adimim' ? 'ativo' : 'desligado'">
             {{ userRole.toUpperCase() }}
           </span>
         </div>
-        
-        <div class="nav-divider"></div>
-
+        <button @click="toggleDark" class="btn-white">
+          {{ isDark ? 'Modo Claro ☀️' : 'Modo Escuro 🌙' }}
+        </button>
         <button class="btn-outline" @click="handleLogout">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
@@ -322,6 +324,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '../lib/supabase'
+import { useDarkMode } from '@/composables/useDarkMode';
+const { isDark, toggleDark } = useDarkMode();
 
 const router = useRouter()
 const userRole = ref<string>('user')
@@ -764,4 +768,11 @@ const imprimirDossie = (c: any) => {
 
 <style scoped>
 @import '../assets/homecss.css';
+
+.header {
+  background-color: var(--card-bg); /* Usa a variável dinâmica */
+  color: var(--color); /* Usa a variável dinâmica */
+  padding: 1rem;
+  border-bottom: 1px solid var(--primary-color);
+}
 </style>

@@ -1,0 +1,20 @@
+:root {
+  --bg-color: #ffffff;
+  --text-color: #1a202c;
+  --card-bg: #f7fafc;
+  --primary-color: #3b82f6;
+}
+
+/* Quando a classe 'dark' está presente no <html> */
+html.dark {
+  --bg-color: #1a202c;
+  --text-color: #f7fafc;
+  --card-bg: #2d3748;
+  --primary-color: #60a5fa;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
