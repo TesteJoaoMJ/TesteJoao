@@ -1,20 +1,42 @@
+/* Definições de cores padrão (Light Mode) */
 :root {
   --bg-color: #ffffff;
-  --text-color: #1a202c;
-  --card-bg: #f7fafc;
+  --text-color: #1a1a1a;
+  --card-bg: #f4f4f7;
+  --border-color: #e2e8f0;
   --primary-color: #3b82f6;
+  --sidebar-bg: #1e293b;
+  --sidebar-text: #ffffff;
 }
 
-/* Quando a classe 'dark' está presente no <html> */
-html.dark {
-  --bg-color: #1a202c;
-  --text-color: #f7fafc;
-  --card-bg: #2d3748;
+/* Definições para Dark Mode - Ativado pela classe .dark no HTML */
+.dark {
+  --bg-color: #0f172a; /* Azul muito escuro/preto */
+  --text-color: #f8fafc; /* Branco acinzentado */
+  --card-bg: #1e293b; /* Azul ardósia escuro */
+  --border-color: #334155;
   --primary-color: #60a5fa;
 }
 
+/* Aplicação Global */
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
-  transition: background-color 0.3s, color 0.3s;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Exemplo de como aplicar nos componentes */
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+input, select, textarea {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
 }
