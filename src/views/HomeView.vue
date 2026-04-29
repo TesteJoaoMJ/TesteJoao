@@ -248,6 +248,11 @@
                   <p v-if="errosAuth.password" class="error-msg">{{ errosAuth.password }}</p>
                 </div>
                 <div class="input-field">
+                  <label>Confirmar Senha Provisória</label>
+                  <input type="password" v-model="novoUsuarioForm.confirmPassword" :class="{ error: errosAuth.confirmPassword }" required />
+                  <p v-if="errosAuth.confirmPassword" class="error-msg">{{ errosAuth.confirmPassword }}</p>
+                </div>
+                <div class="input-field">
                   <label>Nível de Acesso (Role)</label>
                   <select v-model="novoUsuarioForm.role" required>
                     <option value="user">Usuário Comum (Visualização)</option>
@@ -655,7 +660,6 @@ const cadastrarNovoUsuarioAuth = async () => {
 
   if (error) {
     mostrarFeedback(error, 'erro')
-    console.log(error)
   } else {
     mostrarFeedback("Usuário criado com sucesso!", 'sucesso')
     fecharModalNovoUsuario()
@@ -1017,6 +1021,11 @@ const formatarErro = (error: any): string => {
   if (erroStr.includes('bucket not found')) return 'O diretório de arquivos não foi encontrado.'
   if (erroStr.includes('payload too large')) return 'O arquivo que você tentou enviar é muito pesado.'
   if (erroStr.includes('failed to fetch') || erroStr.includes('network error')) return 'Falha na conexão. Verifique sua internet.'
+  if (code === 'over_email_send_rate_limit' || erroStr.includes('over_email_send_rate_limit')) {
+    // Tenta extrair os segundos da mensagem original, se não conseguir, dá um aviso genérico
+    const segundos = error.message?.match(/after (\d+) seconds/)?.[1] || 'alguns';
+    return `Muitas tentativas em pouco tempo. Por segurança, aguarde ${segundos} segundos para tentar de novo.`;
+  }
 
   // Fallback: Se não mapeou em nada acima, tenta exibir a mensagem limpa
   return error.message || 'Ocorreu um erro inesperado ao processar os dados. Tente novamente.'
