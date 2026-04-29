@@ -654,7 +654,8 @@ const cadastrarNovoUsuarioAuth = async () => {
   isCadastrandoUsuario.value = false
 
   if (error) {
-    mostrarFeedback(error.message, 'erro')
+    mostrarFeedback(error, 'erro')
+    console.log(error)
   } else {
     mostrarFeedback("Usuário criado com sucesso!", 'sucesso')
     fecharModalNovoUsuario()
@@ -923,100 +924,102 @@ const formatarData = (d: string) => d ? new Date(d).toLocaleDateString('pt-BR', 
 
 // Adicione esta função no seu <script setup lang="ts">
 const formatarErro = (error: any): string => {
-  // Se não houver erro definido, retorna algo genérico
   if (!error) return 'Ocorreu um erro desconhecido.'
 
   const code = error.code || ''
-  const detalhes = (error.message || error.details || '').toLowerCase()
-  const msg = (error.message || '').toLowerCase()
-
-  // 1. Tratamento de erros do PostgreSQL (Supabase Database)
   
-  // 23505: Unique constraint (violação de chave única)
+  // O SEGREDO ESTÁ AQUI: Juntamos a mensagem e os detalhes para procurar a constraint
+  // Exatamente para resolver o caso onde details é null e a constraint vem na message
+  const erroStr = ((error.message || '') + ' ' + (error.details || '')).toLowerCase()
+
+  // --- 1. ERROS DE DUPLICIDADE (Unique Constraints - 23505) ---
   if (code === '23505') {
-    if (detalhes.includes('colaboradores_cpf_key')) return 'Esse CPF já está cadastrado no sistema.'
-    if (detalhes.includes('colaboradores_email_key')) return 'Esse e-mail já está sendo usado por outro colaborador.'
-    if (detalhes.includes('users_email_partial_key') || detalhes.includes('users_phone_key')) return 'Esse e-mail ou telefone já está registrado no sistema de acessos.'
-    if (detalhes.includes('empresas_pkey')) return 'Esta empresa já está cadastrada.'
-    return 'Este dado já existe no sistema e não pode ser duplicado.'
+    // Empresas
+    if (erroStr.includes('empresas_nome_key')) return 'Já existe uma empresa cadastrada com este nome.'
+    if (erroStr.includes('empresas_pkey')) return 'Esta empresa já existe no sistema.'
+    // Colaboradores
+    if (erroStr.includes('colaboradores_cpf_key')) return 'Este CPF já pertence a um colaborador cadastrado.'
+    if (erroStr.includes('colaboradores_email_key')) return 'Este e-mail já está sendo usado em outro cadastro de colaborador.'
+    if (erroStr.includes('colaboradores_pkey')) return 'Este colaborador já existe no sistema.'
+    // Acesso / Perfis
+    if (erroStr.includes('users_email_partial_key')) return 'Este e-mail já possui uma conta de acesso criada.'
+    if (erroStr.includes('users_phone_key')) return 'Este número de telefone já está vinculado a outro usuário.'
+    
+    return 'Erro de duplicidade: Este registro já existe no sistema.'
   }
 
-  // 23503: Foreign key violation (violação de chave estrangeira)
+  // --- 2. ERROS DE RELACIONAMENTO E EXCLUSÃO (Foreign Key - 23503) ---
   if (code === '23503') {
-    if (detalhes.includes('colaboradores_empresa_id_fkey')) return 'A empresa informada não foi encontrada no sistema.'
-    if (detalhes.includes('linha_do_tempo_colaborador_id_fkey') || detalhes.includes('solicitacoes_colaborador_id_fkey')) return 'Ação negada: o colaborador associado a este registro não foi encontrado.'
-    if (detalhes.includes('is still referenced')) return 'Este registro não pode ser excluído pois ainda possui histórico ou documentos vinculados a ele no sistema.'
-    return 'Erro de referência: um dado associado não foi encontrado.'
+    // Tratamento para exclusão bloqueada (is still referenced)
+    if (erroStr.includes('is still referenced')) {
+      if (erroStr.includes('empresas')) return 'Ação bloqueada: Não é possível excluir esta empresa pois existem colaboradores, histórico ou solicitações vinculados a ela.'
+      if (erroStr.includes('colaboradores')) return 'Ação bloqueada: Este colaborador possui solicitações ou histórico na linha do tempo e não pode ser removido.'
+      return 'Este registro não pode ser removido pois está em uso por outras partes do sistema.'
+    }
+    
+    // Tratamento para inserção com chaves inexistentes
+    if (erroStr.includes('colaboradores_empresa_id_fkey') || erroStr.includes('solicitacoes_empresa_id_fkey') || erroStr.includes('linha_do_tempo_empresa_id_fkey')) return 'A empresa informada não foi encontrada ou é inválida.'
+    if (erroStr.includes('colaboradores_user_id_fkey') || erroStr.includes('historico_logins_user_id_fkey') || erroStr.includes('perfis_id_fkey') || erroStr.includes('solicitacoes_solicitante_id_fkey')) return 'O usuário de acesso vinculado não foi encontrado.'
+    if (erroStr.includes('solicitacoes_colaborador_id_fkey') || erroStr.includes('linha_do_tempo_colaborador_id_fkey')) return 'O colaborador alvo da ação não foi encontrado no sistema.'
+    
+    return 'Erro de referência: um dado obrigatório relacionado não foi encontrado.'
   }
 
-  // 23502: Not null violation (campo obrigatório vazio)
+  // --- 3. CAMPOS OBRIGATÓRIOS VAZIOS (Not Null - 23502) ---
   if (code === '23502') {
-    if (detalhes.includes('nome_completo')) return 'O nome completo do colaborador é obrigatório.'
-    if (detalhes.includes('cpf')) return 'O CPF é obrigatório para o cadastro.'
-    if (detalhes.includes('cargo')) return 'O cargo do colaborador é obrigatório.'
+    // Colaboradores
+    if (erroStr.includes('nome_completo')) return 'O nome completo do colaborador é obrigatório.'
+    if (erroStr.includes('cpf')) return 'O CPF do colaborador é obrigatório.'
+    if (erroStr.includes('data_nascimento')) return 'A data de nascimento é obrigatória.'
+    if (erroStr.includes('email')) return 'O e-mail é um campo obrigatório.'
+    if (erroStr.includes('cargo')) return 'O cargo do colaborador é obrigatório.'
+    if (erroStr.includes('departamento')) return 'O departamento do colaborador é obrigatório.'
+    if (erroStr.includes('salario')) return 'O salário do colaborador é obrigatório.'
+    if (erroStr.includes('data_admissao')) return 'A data de admissão do colaborador é obrigatória.'
+    // Empresas
+    if (erroStr.includes('nome')) return 'O nome da empresa é obrigatório.'
+    // Linha do tempo
+    if (erroStr.includes('tipo_evento')) return 'O tipo de evento é obrigatório para registrar na linha do tempo.'
+    // Solicitações
+    if (erroStr.includes('dados_novos')) return 'Os novos dados da solicitação não podem estar vazios.'
+    
     return 'Um ou mais campos obrigatórios não foram preenchidos.'
   }
 
-  // 23514: Check constraint violation (violação de regra de checagem)
+  // --- 4. REGRAS DE VALIDAÇÃO (Check Constraints - 23514) ---
   if (code === '23514') {
-    if (detalhes.includes('perfis_role_check')) return 'O nível de acesso (perfil) selecionado é inválido.'
-    if (detalhes.includes('salario')) return 'O valor do salário informado não é válido.'
-    return 'Um valor informado não atende às regras permitidas do sistema.'
+    if (erroStr.includes('perfis_role_check')) return 'Nível de perfil inválido. O sistema só aceita: adimim, rh ou user.'
+    return 'Os dados informados violam as regras do sistema.'
   }
 
-  // 22001: String data right truncation (texto muito longo)
-  if (code === '22001') {
-    return 'Um dos textos informados é muito longo e ultrapassou o limite de caracteres permitido.'
+  // --- 5. TIPOS DE DADOS INVÁLIDOS (22P02 e afins) ---
+  if (code === '22P02' || code === '22007' || code === '22008') {
+    if (erroStr.includes('uuid')) return 'O identificador (ID) enviado possui um formato inválido.'
+    if (erroStr.includes('numeric')) return 'O valor numérico inserido (ex: salário) está em um formato inválido.'
+    if (erroStr.includes('date') || erroStr.includes('timestamp')) return 'Uma das datas inseridas possui formato inválido.'
+    if (erroStr.includes('status_colaborador')) return 'O status do colaborador é inválido (deve ser Ativo ou Desligado).'
+    return 'Formato de dado incorreto em um dos campos.'
   }
 
-  // 22007 ou 22008: Invalid datetime format / overflow
-  if (code === '22007' || code === '22008') {
-    return 'Uma das datas informadas (como nascimento ou admissão) possui um formato inválido.'
-  }
-
-  // 22P02: Invalid text representation (formato de tipo inválido)
-  if (code === '22P02') {
-    if (detalhes.includes('uuid')) return 'Falha na identificação do registro (ID de identificação inválido).'
-    if (detalhes.includes('status_colaborador')) return 'O status selecionado para o colaborador não é válido.'
-    return 'O formato de algum dado enviado está incorreto (ex: texto em um campo de número).'
-  }
-
-  // 40P01: Deadlock detected
-  if (code === '40P01') {
-    return 'O sistema está processando muitas requisições simultâneas. Aguarde alguns segundos e tente novamente.'
-  }
-
-  // 42501: RLS (Row Level Security) - Falta de permissão no banco
+  // --- 6. ERROS DE PERMISSÃO E RLS (42501) ---
   if (code === '42501') {
-    return 'Você não possui privilégios de administrador para realizar esta ação ou visualizar este dado.'
+    if (erroStr.includes('empresas')) return 'Apenas administradores (adimim) podem inserir ou gerenciar empresas.'
+    if (erroStr.includes('solicitacoes')) return 'Apenas administradores podem visualizar ou processar as solicitações.'
+    if (erroStr.includes('storage') || erroStr.includes('bucket')) return 'Você não tem permissão para enviar ou ler documentos no cofre.'
+    return 'Acesso negado: Você não tem permissão para realizar esta operação.'
   }
 
-  // 2. Tratamento de erros do Supabase Auth e Storage (via mensagem)
-  
-  // Auth
-  if (msg.includes('user already registered')) return 'Este e-mail já possui um acesso cadastrado no sistema.'
-  if (msg.includes('invalid login credentials')) return 'E-mail ou senha incorretos.'
-  if (msg.includes('password should be at least')) return 'Por segurança, a senha deve ter no mínimo 6 caracteres.'
-  if (msg.includes('email not confirmed')) return 'Você precisa confirmar seu e-mail antes de acessar a plataforma.'
-  if (msg.includes('token expired') || msg.includes('jwt expired')) return 'Sua sessão expirou por segurança. Por favor, atualize a página ou faça login novamente.'
-  if (msg.includes('rate limit exceeded') || msg.includes('too many requests')) return 'Muitas tentativas realizadas em curto tempo. Aguarde alguns instantes e tente de novo.'
-  if (msg.includes('weak_password')) return 'A senha escolhida é muito fraca. Tente misturar letras maiúsculas, minúsculas e números.'
-  if (msg.includes('user banned')) return 'O acesso deste usuário foi bloqueado ou suspenso temporariamente.'
-  if (msg.includes('invalid claim') || msg.includes('otp expired')) return 'O código ou link de verificação de segurança expirou ou é inválido.'
+  // --- 7. ERROS DIRETOS DO SUPABASE (Sem código PostgreSQL explícito) ---
+  if (erroStr.includes('user already registered')) return 'Já existe uma conta de acesso criada com este e-mail.'
+  if (erroStr.includes('invalid login credentials')) return 'E-mail ou senha incorretos.'
+  if (erroStr.includes('weak_password')) return 'Sua senha é muito fraca.'
+  if (erroStr.includes('user banned')) return 'O acesso deste usuário foi bloqueado.'
+  if (erroStr.includes('bucket not found')) return 'O diretório de arquivos não foi encontrado.'
+  if (erroStr.includes('payload too large')) return 'O arquivo que você tentou enviar é muito pesado.'
+  if (erroStr.includes('failed to fetch') || erroStr.includes('network error')) return 'Falha na conexão. Verifique sua internet.'
 
-  // Storage
-  if (msg.includes('the resource was not found') || msg.includes('object not found')) return 'O arquivo ou documento solicitado não foi encontrado no cofre.'
-  if (msg.includes('payload too large') || msg.includes('exceeds the maximum allowed size')) return 'O arquivo enviado é muito grande e ultrapassa o limite permitido pelo servidor.'
-  if (msg.includes('mime type not supported') || msg.includes('invalid mime type')) return 'O formato do arquivo enviado não é suportado (use PDF, JPG ou PNG).'
-  if (msg.includes('already exists') || msg.includes('duplicate')) return 'Um arquivo com este exato nome já existe na pasta deste colaborador. Tente renomeá-lo antes do envio.'
-
-  // Erros de Rede/Conexão
-  if (msg.includes('failed to fetch') || msg.includes('network error') || msg.includes('timeout')) {
-    return 'Falha na conexão com o servidor. Verifique sua internet e tente novamente.'
-  }
-
-  // 3. Retorno fallback para erros não mapeados
-  return error.message || 'Ocorreu um erro inesperado na operação. Nossa equipe técnica já foi notificada.'
+  // Fallback: Se não mapeou em nada acima, tenta exibir a mensagem limpa
+  return error.message || 'Ocorreu um erro inesperado ao processar os dados. Tente novamente.'
 }
 
 // Substitua sua função mostrarFeedback atual por esta:
