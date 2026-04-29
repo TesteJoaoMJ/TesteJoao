@@ -12,8 +12,6 @@
         </div>
       </div>
       <div class="navbar-right">
-        
-        
         <div class="nav-divider"></div>
         <div class="user-profile">
           <span class="user-email">{{ usuarioAtual?.email || 'Carregando...' }}</span>
@@ -93,55 +91,74 @@
         </select>
       </div>
 
-      <div class="card-grid">
-        <div v-if="isLoading" class="loading-state">
-          <div class="spinner"></div>
-          <p>Carregando colaboradores...</p>
+      <Transition name="fade" mode="out-in">
+        <div v-if="isLoading" key="loading" class="card-grid">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th><div class="skeleton-item h-4 w-24"></div></th>
+                <th><div class="skeleton-item h-4 w-32"></div></th>
+                <th><div class="skeleton-item h-4 w-20"></div></th>
+                <th><div class="skeleton-item h-4 w-16"></div></th>
+                <th class="align-right"><div class="skeleton-item h-4 w-12 ml-auto"></div></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="i in 5" :key="i">
+                <td><div class="skeleton-item h-5 w-48 rounded"></div></td>
+                <td><div class="skeleton-item h-5 w-32 rounded"></div></td>
+                <td><div class="skeleton-item h-5 w-24 rounded"></div></td>
+                <td><div class="skeleton-item h-6 w-20 rounded-full"></div></td>
+                <td class="align-right">
+                  <div class="action-buttons">
+                    <div class="skeleton-item h-8 w-8 rounded"></div>
+                    <div class="skeleton-item h-8 w-8 rounded"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Cargo</th>
-              <th>Departamento</th>
-              <th>Status</th>
-              <th class="align-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="colab in colaboradoresFiltrados" :key="colab.id">
-              <td>{{ colab.nome_completo }}</td>
-              <td>{{ colab.cargo }}</td>
-              <td>{{ colab.departamento }}</td>
-              <td>
-                <span :class="['badge', colab.status?.toLowerCase()]">{{ colab.status }}</span>
-              </td>
-              <td class="align-right">
-                <div class="action-buttons">
-                  <button class="btn-icon" title="Editar" @click="abrirModalEditar(colab)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  </button>
-                  <button class="btn-icon" title="Linha do Tempo" @click="abrirModalTimeline(colab)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-                  </button>
-                  <button class="btn-icon" title="Imprimir Dossiê" @click="imprimirDossie(colab)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="6 9 6 2 18 2 18 9" />
-                      <path
-                        d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
-                      />
-                      <rect x="6" y="14" width="12" height="8" />
-                    </svg>
-                  </button>
-                  <button v-if="userRole === 'adimim' && colab.status === 'Ativo'" class="btn-icon danger" @click="executarComVerificacao(() => desligarColaborador(colab))">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="pagination-container">
+
+        <div v-else key="content" class="card-grid">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Cargo</th>
+                <th>Departamento</th>
+                <th>Status</th>
+                <th class="align-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="colab in colaboradoresFiltrados" :key="colab.id">
+                <td>{{ colab.nome_completo }}</td>
+                <td>{{ colab.cargo }}</td>
+                <td>{{ colab.departamento }}</td>
+                <td>
+                  <span :class="['badge', colab.status?.toLowerCase()]">{{ colab.status }}</span>
+                </td>
+                <td class="align-right">
+                  <div class="action-buttons">
+                    <button class="btn-icon" title="Editar" @click="abrirModalEditar(colab)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="btn-icon" title="Linha do Tempo" @click="abrirModalTimeline(colab)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                    </button>
+                    <button class="btn-icon" title="Imprimir Dossiê" @click="imprimirDossie(colab)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
+                    </button>
+                    <button title="Desligar Colaborador" v-if="userRole === 'adimim' && colab.status === 'Ativo'" class="btn-icon danger" @click="executarComVerificacao(() => desligarColaborador(colab))">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+            <div class="pagination-container">
       <span class="pagination-info">
         Página {{ paginaAtual }} de {{ totalPaginas }}
       </span>
@@ -162,7 +179,13 @@
         </button>
       </div>
       </div>
-      </div>
+          <!-- Empty State suave -->
+          <div v-if="colaboradoresFiltrados.length === 0" class="empty-state-simple">
+            Nenhum colaborador encontrado.
+          </div>
+        </div>
+      </Transition>
+
     </main>
 
     <div v-if="isModalOpen" class="modal-backdrop" @click.self="fecharModal">
@@ -263,7 +286,7 @@
                       </svg>
                     </button>
                 
-                    <button v-if="userRole === 'adimim'" type="button" class="btn-outline success" @click="uploadDocumentoCofre" :disabled="uploading">
+                    <button v-if="userRole === 'adimim'" type="button" class="btn-white success" @click="uploadDocumentoCofre" :disabled="uploading">
                       {{ uploading ? 'Enviando...' : 'Confirmar Envio' }}
                     </button>
                   </div>
@@ -272,7 +295,7 @@
                 <div v-if="documentosColab.length > 0" class="doc-list">
                   <div v-for="doc in documentosColab" :key="doc.id" class="doc-item">
                     <span>{{ doc.descricao }}</span>
-                    <button type="button" @click="visualizarDocumento(doc.arquivo_url)" class="btn-outline">Abrir</button>
+                    <button type="button" @click="visualizarDocumento(doc.arquivo_url)" class="btn-white">Abrir</button>
                   </div>
                 </div>
               </div>
@@ -372,8 +395,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '../lib/supabase'
 import { useTheme } from '../composables/useDarkMode'
-const { theme, toggleTheme } = useTheme()
 
+const { theme, toggleTheme } = useTheme()
 const router = useRouter()
 const userRole = ref<string>('user')
 const usuarioAtual = ref<any>(null)
@@ -417,17 +440,14 @@ const filePreviewType = ref<string>('')
 const fileInput = ref<HTMLInputElement | null>(null)
 
 // --- COMPUTED PROPERTIES ---
-const departamentosUnicos = computed(() => {
-  return [...new Set(colaboradores.value.map((c) => c.departamento))]
-})
+const departamentosUnicos = computed(() => [...new Set(colaboradores.value.map(c => c.departamento))])
 
 const colaboradoresFiltrados = computed(() => {
   return colaboradores.value.filter(c => {
-    const search = filtroBusca.value.toLowerCase()
-    const matchesBusca = c.nome_completo.toLowerCase().includes(search) || c.cpf.includes(search)
-    const matchesStatus = filtroStatus.value ? c.status === filtroStatus.value : true
-    const matchesDepto = filtroDepto.value ? c.departamento === filtroDepto.value : true
-    return matchesBusca && matchesStatus && matchesDepto
+    const s = filtroBusca.value.toLowerCase()
+    return (c.nome_completo.toLowerCase().includes(s) || c.cpf.includes(s)) &&
+           (filtroStatus.value ? c.status === filtroStatus.value : true) &&
+           (filtroDepto.value ? c.departamento === filtroDepto.value : true)
   })
 })
 
@@ -449,19 +469,18 @@ onMounted(async () => {
   const { data: perfil } = await supabase.from('perfis').select('role').eq('id', session.user.id).single()
   userRole.value = perfil?.role || 'user'
   
-  fetchColaboradores()
+  await fetchColaboradores()
   if (userRole.value === 'adimim') fetchSolicitacoes()
 })
 
 // --- MÉTODOS DE BUSCA ---
 const fetchColaboradores = async () => {
   try {
-    isLoading.value = true // CORREÇÃO: era .ref, mudei para .value
-    
+    isLoading.value = true // Ativa skeleton
     const de = (paginaAtual.value - 1) * itensPorPagina
     const ate = de + itensPorPagina - 1
 
-    const { data, error, count } = await supabase
+     const { data, error, count } = await supabase
       .from('colaboradores')
       .select('*', { count: 'exact' })
       .range(de, ate)
@@ -472,12 +491,13 @@ const fetchColaboradores = async () => {
     colaboradores.value = data || []
     totalColaboradores.value = count || 0
   } catch (error) {
-    console.error('Erro ao carregar colaboradores:', error)
-    alert('Erro ao carregar os dados. Verifique a conexão.')
+    console.error(error)
   } finally {
-    isLoading.value = false
+    // Pequeno timeout opcional para evitar o "flash" se a internet for rápida demais
+    setTimeout(() => { isLoading.value = false }, 400)
   }
 }
+
 const totalPaginas = computed(() => Math.ceil(totalColaboradores.value / itensPorPagina))
 // Navegação de página
 const mudarPagina = (novaPagina: number) => {
@@ -958,4 +978,72 @@ const imprimirDossie = (c: any) => {
   gap: 8px;
 }
 
+/* Transição de Fade */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* SKELETON ANIMATION */
+.skeleton-item {
+  background-color: #e2e8f0; /* Cor Light */
+  position: relative;
+  overflow: hidden;
+  border-radius: 15px;
+}
+
+/* Efeito Shimmer (Brilho movendo) */
+.skeleton-item::after {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* Suporte ao Dark Mode no Skeleton */
+:global(.dark) .skeleton-item {
+  background-color: #2d3748;
+}
+:global(.dark) .skeleton-item::after {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+}
+
+/* Utilitários de Skeleton */
+.h-4 { height: 1rem; }
+.h-5 { height: 1.25rem; }
+.h-6 { height: 1.5rem; }
+.h-8 { height: 2rem; }
+.w-12 { width: 3rem; }
+.w-16 { width: 4rem; }
+.w-20 { width: 5rem; }
+.w-24 { width: 6rem; }
+.w-32 { width: 8rem; }
+.w-48 { width: 12rem; }
+.rounded { border-radius: 4px; }
+.rounded-full { border-radius: 9999px; }
+.ml-auto { margin-left: auto; }
+
+/* Empty State */
+.empty-state-simple {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Ajuste na tabela para não quebrar com skeleton */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
 </style>
