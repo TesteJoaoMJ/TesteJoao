@@ -104,13 +104,13 @@
         </div>
       </div>
 
-      <div class="card-grid filter-row">
+      <div class="card-grid">
         <template v-if="isLoading">
           <div class="search-wrapper" style="flex: 1;">
-            <div class="skeleton-item rounded" style="width: 100%; height: 42px;"></div>
+            <div class="skeleton-item" style="width: 100%; height: 42px;"></div>
           </div>
-          <div class="skeleton-item rounded" style="width: 160px; height: 42px;"></div>
-          <div class="skeleton-item rounded" style="width: 180px; height: 42px;"></div>
+            <div class="skeleton-item" style="width: 100%; height: 42px;"></div>
+            <div class="skeleton-item" style="width: 100%; height: 42px;"></div>
         </template>
         
         <template v-else>
@@ -188,16 +188,16 @@
                 </td>
                 <td class="align-right">
                   <div class="action-buttons">
-                    <button class="btn-icon" title="Editar" @click="abrirModalEditar(colab)">
+                    <button class="btn-icon" data-tooltip="Editar" @click="abrirModalEditar(colab)">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
-                    <button class="btn-icon" title="Linha do Tempo" @click="abrirModalTimeline(colab)">
+                    <button class="btn-icon" data-tooltip="Linha do Tempo" @click="abrirModalTimeline(colab)">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                     </button>
-                    <button class="btn-icon" title="Imprimir Dossiê" @click="imprimirDossie(colab)">
+                    <button class="btn-icon" data-tooltip="Imprimir Dossiê" @click="imprimirDossie(colab)">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
                     </button>
-                    <button title="Desligar Colaborador" v-if="userRole === 'adimim' && colab.status === 'Ativo'" class="btn-icon danger" @click="executarComVerificacao(() => desligarColaborador(colab))">
+                    <button v-if="userRole === 'adimim' && colab.status === 'Ativo'" data-tooltip="Desligar Colaborador" class="btn-icon danger" @click="executarComVerificacao(() => desligarColaborador(colab))">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
                     </button>
                   </div>
@@ -857,72 +857,4 @@ const imprimirDossie = (c: any) => {
 
 <style scoped>
 @import '../assets/homecss.css';
-
-.theme-btn {
-  padding: 8px 16px;
-  cursor: pointer;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  transition: all 0.2s;
-}
-
-.filter-row {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-/* Botões de Ação Específicos */
-.btn-icon {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 5px;
-  border-radius: 4px;
-  transition: background-color 0.2s, color 0.2s;
-  display: inline-flex;
-  align-items: center;
-}
-
-.btn-icon svg {
-  width: 18px;
-  height: 18px;
-}
-
-.btn-icon:hover {
-  background-color: var(--bg-app);
-  color: var(--primary);
-}
-
-.btn-icon.danger:hover {
-  color: #e74c3c;
-  background-color: rgba(231, 76, 60, 0.1);
-}
-
-.align-right {
-  text-align: right;
-}
-
-.action-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.empty-state-simple {
-  padding: 40px;
-  text-align: center;
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-/* Ajuste na tabela para não quebrar com skeleton */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-}
 </style>
