@@ -94,6 +94,10 @@
       </div>
 
       <div class="card-grid">
+        <div v-if="isLoading" class="loading-state">
+          <div class="spinner"></div>
+          <p>Carregando colaboradores...</p>
+        </div>
         <table class="data-table">
           <thead>
             <tr>
@@ -137,6 +141,27 @@
             </tr>
           </tbody>
         </table>
+        <div class="pagination-container">
+      <span class="pagination-info">
+        Página {{ paginaAtual }} de {{ totalPaginas }}
+      </span>
+      <div class="pagination-buttons">
+        <button 
+          class="btn-pagination" 
+          :disabled="paginaAtual === 1" 
+          @click="mudarPagina(paginaAtual - 1)"
+        >
+          Anterior
+        </button>
+        <button 
+          class="btn-pagination" 
+          :disabled="paginaAtual >= totalPaginas" 
+          @click="mudarPagina(paginaAtual + 1)"
+        >
+          Próxima
+        </button>
+      </div>
+      </div>
       </div>
     </main>
 
@@ -354,6 +379,10 @@ const userRole = ref<string>('user')
 const usuarioAtual = ref<any>(null)
 const colaboradores = ref<any[]>([])
 const solicitacoesPendentes = ref<any[]>([])
+const isLoading = ref(true) // Começa como true para mostrar o loading ao entrar
+const totalColaboradores = ref(0)
+const paginaAtual = ref(1)
+const itensPorPagina = 10 // Defina a quantidade desejada
 
 const timelineColab = ref<any[]>([])
 const documentosColab = ref<any[]>([])
@@ -426,9 +455,41 @@ onMounted(async () => {
 
 // --- MÉTODOS DE BUSCA ---
 const fetchColaboradores = async () => {
-  const { data } = await supabase.from('colaboradores').select('*').order('nome_completo')
-  colaboradores.value = data || []
+  try {
+    isLoading.value = true // CORREÇÃO: era .ref, mudei para .value
+    
+    const de = (paginaAtual.value - 1) * itensPorPagina
+    const ate = de + itensPorPagina - 1
+
+    const { data, error, count } = await supabase
+      .from('colaboradores')
+      .select('*', { count: 'exact' })
+      .range(de, ate)
+      .order('nome_completo', { ascending: true })
+
+    if (error) throw error
+
+    colaboradores.value = data || []
+    totalColaboradores.value = count || 0
+  } catch (error) {
+    console.error('Erro ao carregar colaboradores:', error)
+    alert('Erro ao carregar os dados. Verifique a conexão.')
+  } finally {
+    isLoading.value = false
+  }
 }
+const totalPaginas = computed(() => Math.ceil(totalColaboradores.value / itensPorPagina))
+// Navegação de página
+const mudarPagina = (novaPagina: number) => {
+  if (novaPagina >= 1 && novaPagina <= totalPaginas.value) {
+    paginaAtual.value = novaPagina
+    fetchColaboradores() // Chama o Supabase com o novo range
+  }
+}
+
+onMounted(() => {
+  fetchColaboradores()
+})
 
 const fetchSolicitacoes = async () => {
   const { data, error } = await supabase
