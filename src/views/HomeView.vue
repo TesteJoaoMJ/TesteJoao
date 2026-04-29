@@ -488,7 +488,18 @@
   </div>
 
   <transition name="toast">
-    <div v-if="feedback.mensagem" :class="['toast-message', feedback.tipo]"><span>{{ feedback.mensagem }}</span></div>
+    <div v-if="feedback.mensagem" :class="['toast-container', feedback.tipo]">
+      <div class="toast-content">
+        <!-- Ícone dinâmico opcional -->
+        <div class="toast-icon">
+          <svg v-if="feedback.tipo === 'sucesso'" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+          <svg v-else viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+        </div>
+        <span class="toast-text">{{ feedback.mensagem }}</span>
+      </div>
+      <!-- Barra de progresso visual (UX extra) -->
+      <div class="toast-progress"></div>
+    </div>
   </transition>
 </template>
 
@@ -525,8 +536,10 @@ const isEditando = ref(false)
 const colabEmEdicao = ref<any>({})
 const colabSelecionado = ref<any>(null)
 const erros = ref<Record<string, string>>({})
-const feedback = ref({ mensagem: '', tipo: '' })
-
+const feedback = ref({
+  mensagem: '',
+  tipo: '' // 'sucesso', 'erro', 'alerta'
+})
 const filtroBusca = ref('')
 const filtroStatus = ref('')
 const filtroDepto = ref('')
@@ -907,7 +920,15 @@ const handleLogout = async () => {
 }
 
 const formatarData = (d: string) => d ? new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '-'
-const mostrarFeedback = (m: string, t: string) => { feedback.value = { mensagem: m, tipo: t }; setTimeout(() => feedback.value = { mensagem: '', tipo: '' }, 3000) }
+
+const mostrarFeedback = (m: string, t: string = 'sucesso') => {
+  feedback.value = { mensagem: m, tipo: t }
+  
+  // Limpa o feedback após 3 segundos
+  setTimeout(() => {
+    feedback.value = { mensagem: '', tipo: '' }
+  }, 3000)
+}
 
 const aplicarMascaraCPF = (e: any) => {
   let v = e.target.value.replace(/\D/g, '')

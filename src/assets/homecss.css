@@ -341,7 +341,6 @@ button {
 }
   
 /* MODAL */
-/* MODAL */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -968,4 +967,85 @@ button {
 }
 .btn-icon.danger[data-tooltip]:hover::before {
   border-color: var(--danger) transparent transparent transparent;
+}
+/* Posicionamento do Toast */
+.toast-container {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  z-index: 9999; /* Acima de modais e navbars */
+  min-width: 300px;
+  max-width: 450px;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1rem;
+}
+
+.toast-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Cores baseadas no seu sistema */
+.toast-container.sucesso .toast-icon { color: var(--success); }
+.toast-container.erro .toast-icon { color: var(--danger); }
+.toast-container.alerta .toast-icon { color: var(--warning); }
+
+.toast-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Barra de progresso animada */
+.toast-progress {
+  height: 3px;
+  width: 100%;
+  background: var(--border);
+  position: relative;
+}
+
+.toast-progress::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background: var(--primary);
+  animation: progress 3s linear forwards;
+}
+
+.sucesso .toast-progress::after { background: var(--success); }
+.erro .toast-progress::after { background: var(--danger); }
+
+@keyframes progress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+/* Animações de Transição do Vue */
+.toast-enter-active {
+  animation: toast-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.toast-leave-active {
+  animation: toast-in 0.3s reverse ease-in;
+}
+
+@keyframes toast-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
