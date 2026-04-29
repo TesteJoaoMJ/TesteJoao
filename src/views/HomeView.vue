@@ -26,10 +26,10 @@
       <div class="navbar-right">
         
         <template v-if="userRole === 'adimim' && !isLoading">
-          <select class="input-select" style="min-width: 180px; border-color: var(--primary);" @change="lidarComAcoesRapidas($event)">
-            <option value="" disabled selected>Ações Rápidas</option>
-            <option value="novo_usuario">Novo Usuário (Acesso)</option>
-            <option value="novo_setor">Cadastrar Novo Setor</option>
+          <select class="input-select" @change="lidarComAcoesRapidas($event)">
+            <option value="" disabled selected >Ações Rápidas</option>
+            <option value="novo_usuario" class="input-select-option">Novo Usuário (Acesso)</option>
+            <option value="novo_setor" class="input-select-option">Cadastrar Novo Setor</option>
           </select>
         </template>
 
@@ -117,16 +117,22 @@
         
         <template v-else>
           <div class="search-wrapper">
+            <!-- Ícone de Lupa em SVG -->
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="25" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            
             <input type="text" v-model="filtroBusca" placeholder="Buscar por nome ou CPF..." class="input-search" />
           </div>
           <select v-model="filtroStatus" class="input-select">
-            <option value="">Todos os Status</option>
-            <option value="Ativo">Ativos</option>
-            <option value="Desligado">Desligados</option>
+            <option value="" class="input-select-option">Todos os Status</option>
+            <option value="Ativo" class="input-select-option">Ativos</option>
+            <option value="Desligado" class="input-select-option">Desligados</option>
           </select>
           <select v-model="filtroDepto" class="input-select">
-            <option value="">Todos Departamentos</option>
-            <option v-for="d in departamentosUnicos" :key="d" :value="d">{{ d }}</option>
+            <option value="" class="input-select-option">Todos Departamentos</option>
+            <option v-for="d in departamentosUnicos" :key="d" :value="d" class="input-select-option">{{ d }}</option>
           </select>
         </template>
       </div>
@@ -431,11 +437,11 @@
         
         <div class="timeline-filters">
           <input type="text" v-model="filtroTimelineBusca" placeholder="Procurar no histórico..." class="input-search-sm" />
-          <select v-model="filtroTimelineTipo" class="input-select-sm">
-            <option value="">Todos os Eventos</option>
-            <option value="Admissão">Admissão</option>
-            <option value="Desligamento">Desligamento</option>
-            <option value="Upload de Documento">Documentos</option>
+          <select v-model="filtroTimelineTipo" class="input-select">
+            <option value="" class="input-select-option">Todos os Eventos</option>
+            <option value="Admissão" class="input-select-option">Admissão</option>
+            <option value="Desligamento" class="input-select-option">Desligamento</option>
+            <option value="Upload de Documento" class="input-select-option">Documentos</option>
           </select>
         </div>
 
@@ -1286,6 +1292,25 @@ const imprimirDossie = (c: any) => {
   text-align: center;  
 }
 
+.input-select {
+  background-color: var(--bg-surface-hover);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none; 
+  -webkit-appearance: none;
+}
+
+.input-select-option, .input-select-option:hover {
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  text-align: center;
+}
+
 /* Tratamento de Erros visuais nos Forms */
 input.error, select.error {
   border-color: var(--danger) !important;
@@ -1298,5 +1323,32 @@ input.error, select.error {
   margin-top: 4px;
   display: block;
   font-weight: 500;
+}
+
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: #888; /* Adjust to fit your theme */
+  pointer-events: none;
+}
+
+.search-wrapper .input-search {
+  background-color: var(--bg-primary); /* Sets background to --bg-primary */
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  height: 40px;
+  width: 100%;
+  padding-left: 38px; /* Crucial: Prevents text from hiding behind the SVG */
+  color: var(--text-main);
+  transition: all 0.3s ease;
+  appearance: none;
+  -webkit-appearance: none;
 }
 </style>
