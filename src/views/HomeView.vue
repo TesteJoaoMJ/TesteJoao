@@ -27,9 +27,9 @@
         
         <template v-if="userRole === 'adimim' && !isLoading">
           <select class="input-select" style="min-width: 180px; border-color: var(--primary);" @change="lidarComAcoesRapidas($event)">
-            <option value="" disabled selected>⚙️ Ações Rápidas...</option>
-            <option value="novo_usuario">👤 Novo Usuário (Acesso)</option>
-            <option value="novo_setor">🏢 Cadastrar Novo Setor</option>
+            <option value="" disabled selected>Ações Rápidas</option>
+            <option value="novo_usuario">Novo Usuário (Acesso)</option>
+            <option value="novo_setor">Cadastrar Novo Setor</option>
           </select>
         </template>
 
@@ -677,7 +677,7 @@ const cadastrarNovoSetor = async () => {
   isCadastrandoSetor.value = true
   const { error } = await supabase.from('empresas').insert([{ nome: novoSetorNome.value }])
   isCadastrandoSetor.value = false
-  if (error) mostrarFeedback(error.message, 'erro')
+  if (error) mostrarFeedback(error, 'erro')
   else { mostrarFeedback("Setor criado!", 'sucesso'); fetchEmpresas(); fecharModalNovoSetor() }
 }
 
@@ -801,7 +801,7 @@ const enviarSolicitacao = async () => {
     fecharModal()
   } catch (err) {
     console.error('Erro detalhado:', err)
-    mostrarFeedback('Erro ao processar solicitação.', 'erro')
+    mostrarFeedback(err, 'erro')
   }
 }
 
@@ -845,7 +845,7 @@ const aprovarSolicitacao = async (sol: any) => {
     isLoading.value = false
   } catch (err) {
     console.error('Erro detalhado na aprovação:', err);
-    mostrarFeedback('Erro ao gravar no banco. Verifique o console.', 'erro');
+    mostrarFeedback(err, 'erro');
   }
 };
 
@@ -862,7 +862,7 @@ const rejeitarSolicitacao = async (id: string) => {
     isLoading.value = false
   } catch (err) {
     console.error('Erro ao rejeitar:', err);
-    mostrarFeedback('Falha ao atualizar solicitação. Verifique o console.', 'erro');
+    mostrarFeedback(err, 'erro');
   }
 };
 
@@ -921,8 +921,114 @@ const handleLogout = async () => {
 
 const formatarData = (d: string) => d ? new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '-'
 
-const mostrarFeedback = (m: string, t: string = 'sucesso') => {
-  feedback.value = { mensagem: m, tipo: t }
+// Adicione esta função no seu <script setup lang="ts">
+const formatarErro = (error: any): string => {
+  // Se não houver erro definido, retorna algo genérico
+  if (!error) return 'Ocorreu um erro desconhecido.'
+
+  const code = error.code || ''
+  const detalhes = (error.message || error.details || '').toLowerCase()
+  const msg = (error.message || '').toLowerCase()
+
+  // 1. Tratamento de erros do PostgreSQL (Supabase Database)
+  
+  // 23505: Unique constraint (violação de chave única)
+  if (code === '23505') {
+    if (detalhes.includes('colaboradores_cpf_key')) return 'Esse CPF já está cadastrado no sistema.'
+    if (detalhes.includes('colaboradores_email_key')) return 'Esse e-mail já está sendo usado por outro colaborador.'
+    if (detalhes.includes('users_email_partial_key') || detalhes.includes('users_phone_key')) return 'Esse e-mail ou telefone já está registrado no sistema de acessos.'
+    if (detalhes.includes('empresas_pkey')) return 'Esta empresa já está cadastrada.'
+    return 'Este dado já existe no sistema e não pode ser duplicado.'
+  }
+
+  // 23503: Foreign key violation (violação de chave estrangeira)
+  if (code === '23503') {
+    if (detalhes.includes('colaboradores_empresa_id_fkey')) return 'A empresa informada não foi encontrada no sistema.'
+    if (detalhes.includes('linha_do_tempo_colaborador_id_fkey') || detalhes.includes('solicitacoes_colaborador_id_fkey')) return 'Ação negada: o colaborador associado a este registro não foi encontrado.'
+    if (detalhes.includes('is still referenced')) return 'Este registro não pode ser excluído pois ainda possui histórico ou documentos vinculados a ele no sistema.'
+    return 'Erro de referência: um dado associado não foi encontrado.'
+  }
+
+  // 23502: Not null violation (campo obrigatório vazio)
+  if (code === '23502') {
+    if (detalhes.includes('nome_completo')) return 'O nome completo do colaborador é obrigatório.'
+    if (detalhes.includes('cpf')) return 'O CPF é obrigatório para o cadastro.'
+    if (detalhes.includes('cargo')) return 'O cargo do colaborador é obrigatório.'
+    return 'Um ou mais campos obrigatórios não foram preenchidos.'
+  }
+
+  // 23514: Check constraint violation (violação de regra de checagem)
+  if (code === '23514') {
+    if (detalhes.includes('perfis_role_check')) return 'O nível de acesso (perfil) selecionado é inválido.'
+    if (detalhes.includes('salario')) return 'O valor do salário informado não é válido.'
+    return 'Um valor informado não atende às regras permitidas do sistema.'
+  }
+
+  // 22001: String data right truncation (texto muito longo)
+  if (code === '22001') {
+    return 'Um dos textos informados é muito longo e ultrapassou o limite de caracteres permitido.'
+  }
+
+  // 22007 ou 22008: Invalid datetime format / overflow
+  if (code === '22007' || code === '22008') {
+    return 'Uma das datas informadas (como nascimento ou admissão) possui um formato inválido.'
+  }
+
+  // 22P02: Invalid text representation (formato de tipo inválido)
+  if (code === '22P02') {
+    if (detalhes.includes('uuid')) return 'Falha na identificação do registro (ID de identificação inválido).'
+    if (detalhes.includes('status_colaborador')) return 'O status selecionado para o colaborador não é válido.'
+    return 'O formato de algum dado enviado está incorreto (ex: texto em um campo de número).'
+  }
+
+  // 40P01: Deadlock detected
+  if (code === '40P01') {
+    return 'O sistema está processando muitas requisições simultâneas. Aguarde alguns segundos e tente novamente.'
+  }
+
+  // 42501: RLS (Row Level Security) - Falta de permissão no banco
+  if (code === '42501') {
+    return 'Você não possui privilégios de administrador para realizar esta ação ou visualizar este dado.'
+  }
+
+  // 2. Tratamento de erros do Supabase Auth e Storage (via mensagem)
+  
+  // Auth
+  if (msg.includes('user already registered')) return 'Este e-mail já possui um acesso cadastrado no sistema.'
+  if (msg.includes('invalid login credentials')) return 'E-mail ou senha incorretos.'
+  if (msg.includes('password should be at least')) return 'Por segurança, a senha deve ter no mínimo 6 caracteres.'
+  if (msg.includes('email not confirmed')) return 'Você precisa confirmar seu e-mail antes de acessar a plataforma.'
+  if (msg.includes('token expired') || msg.includes('jwt expired')) return 'Sua sessão expirou por segurança. Por favor, atualize a página ou faça login novamente.'
+  if (msg.includes('rate limit exceeded') || msg.includes('too many requests')) return 'Muitas tentativas realizadas em curto tempo. Aguarde alguns instantes e tente de novo.'
+  if (msg.includes('weak_password')) return 'A senha escolhida é muito fraca. Tente misturar letras maiúsculas, minúsculas e números.'
+  if (msg.includes('user banned')) return 'O acesso deste usuário foi bloqueado ou suspenso temporariamente.'
+  if (msg.includes('invalid claim') || msg.includes('otp expired')) return 'O código ou link de verificação de segurança expirou ou é inválido.'
+
+  // Storage
+  if (msg.includes('the resource was not found') || msg.includes('object not found')) return 'O arquivo ou documento solicitado não foi encontrado no cofre.'
+  if (msg.includes('payload too large') || msg.includes('exceeds the maximum allowed size')) return 'O arquivo enviado é muito grande e ultrapassa o limite permitido pelo servidor.'
+  if (msg.includes('mime type not supported') || msg.includes('invalid mime type')) return 'O formato do arquivo enviado não é suportado (use PDF, JPG ou PNG).'
+  if (msg.includes('already exists') || msg.includes('duplicate')) return 'Um arquivo com este exato nome já existe na pasta deste colaborador. Tente renomeá-lo antes do envio.'
+
+  // Erros de Rede/Conexão
+  if (msg.includes('failed to fetch') || msg.includes('network error') || msg.includes('timeout')) {
+    return 'Falha na conexão com o servidor. Verifique sua internet e tente novamente.'
+  }
+
+  // 3. Retorno fallback para erros não mapeados
+  return error.message || 'Ocorreu um erro inesperado na operação. Nossa equipe técnica já foi notificada.'
+}
+
+// Substitua sua função mostrarFeedback atual por esta:
+const mostrarFeedback = (erroOuMensagem: any, t: string = 'sucesso') => {
+  let mensagemFinal = erroOuMensagem
+
+  // Se for um erro do banco ou auth, passamos pelo formatador
+  if (t === 'erro' && typeof erroOuMensagem === 'object' && erroOuMensagem !== null) {
+    mensagemFinal = formatarErro(erroOuMensagem)
+  }
+
+  feedback.value = { mensagem: mensagemFinal, tipo: t }
   
   // Limpa o feedback após 3 segundos
   setTimeout(() => {
@@ -968,7 +1074,7 @@ const uploadDocumentoCofre = async () => {
     limparPreview(); carregarDocumentos(colabEmEdicao.value.id)
     mostrarFeedback('Arquivo enviado!', 'sucesso')
   } else {
-    mostrarFeedback('Erro ao enviar documento.', 'erro')
+    mostrarFeedback(error, 'erro')
   }
   uploading.value = false
 }
@@ -976,7 +1082,7 @@ const uploadDocumentoCofre = async () => {
 const visualizarDocumento = async (path: string) => {
   const { data, error } = await supabase.storage.from('documentos_colaboradores').createSignedUrl(path, 60)
   if (data?.signedUrl) window.open(data.signedUrl, '_blank')
-  if (error) mostrarFeedback('Erro ao abrir documento.', 'erro')
+  if (error) mostrarFeedback(error, 'erro')
 }
 
 const lidarComExportacao = (event: Event) => {
