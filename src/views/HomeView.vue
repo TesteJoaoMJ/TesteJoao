@@ -1,16 +1,28 @@
 <template>
   <div class="app-container header">
     <header class="navbar">
-      <div class="navbar-left">
-        <div class="seletor-grupo">
-          <label class="seletor-label">Selecione a empresa</label>
-          <select class="navbar-select">
-            <option value="MJ - Sistema RH">MJ - Sistema RH</option>
-            <option value="MJ - Sistema Vendas">MJ - Sistema Vendas</option>
-            <option value="MJ - Sistema Financeiro">MJ - Sistema Financeiro</option>
-          </select>
-        </div>
-      </div>
+      <nav class="navbar">
+    <div class="navbar-item">
+      <label class="seletor-label">Selecione a empresa</label>
+      
+      <select 
+        v-model="tenantStore.selectedEmpresaId" 
+        class="navbar-select"
+        :disabled="loading"
+      >
+        <option disabled value="">
+          {{ loading ? 'Carregando...' : 'Selecione uma empresa' }}
+        </option>
+        <option 
+          v-for="empresa in empresas" 
+          :key="empresa.id" 
+          :value="empresa.id"
+        >
+          {{ empresa.nome }}
+        </option>
+      </select>
+    </div>
+  </nav>
       <div class="navbar-right">
         <div class="nav-divider"></div>
         <div class="user-profile">
@@ -395,7 +407,11 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '../lib/supabase'
 import { useTheme } from '../composables/useDarkMode'
+import { useTenantStore } from '@/stores/tenant'
 
+const empresas = ref<{ id: string, nome: string }[]>([])
+const loading = ref(true)
+const tenantStore = useTenantStore()
 const { theme, toggleTheme } = useTheme()
 const router = useRouter()
 const userRole = ref<string>('user')
@@ -438,6 +454,29 @@ const fileToUpload = ref<File | null>(null)
 const filePreview = ref<string | null>(null)
 const filePreviewType = ref<string>('')
 const fileInput = ref<HTMLInputElement | null>(null)
+  
+async function fetchEmpresas() {
+  try {
+    const { data, error } = await supabase
+      .from('empresas')
+      .select('id, nome')
+      .order('nome')
+    
+    if (error) throw error
+    empresas.value = data || []
+
+    // Define uma empresa padrão caso não haja nenhuma selecionada
+    if (!tenantStore.selectedEmpresaId && empresas.value.length > 0) {
+      tenantStore.selectedEmpresaId = empresas.value[0]?.id || '';
+    }
+  } catch (err) {
+    console.error('Erro ao carregar empresas:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(fetchEmpresas)
 
 // --- COMPUTED PROPERTIES ---
 const departamentosUnicos = computed(() => [...new Set(colaboradores.value.map(c => c.departamento))])
@@ -469,23 +508,35 @@ onMounted(async () => {
   const { data: perfil } = await supabase.from('perfis').select('role').eq('id', session.user.id).single()
   userRole.value = perfil?.role || 'user'
   
+  // 1º PASSO: Busca as empresas e define a empresa ativa no Store
+  await fetchEmpresas()
+  
+  // 2º PASSO: Agora sim, com a empresa definida, busca os colaboradores
   await fetchColaboradores()
-  if (userRole.value === 'adimim') fetchSolicitacoes()
+  
+  // 3º PASSO: Carrega as solicitações se for admin
+  if (userRole.value === 'adimim') {
+    fetchSolicitacoes()
+  }
 })
 
 // --- MÉTODOS DE BUSCA ---
 const fetchColaboradores = async () => {
+  // 1. TRAVA DE SEGURANÇA: Se não tiver empresa selecionada, não faz a busca
+  if (!tenantStore.selectedEmpresaId) return;
+
   try {
-    isLoading.value = true // Ativa skeleton
+    isLoading.value = true 
     const de = (paginaAtual.value - 1) * itensPorPagina
     const ate = de + itensPorPagina - 1
 
-     const { data, error, count } = await supabase
+    const { data, error, count } = await supabase
       .from('colaboradores')
       .select('*', { count: 'exact' })
       .range(de, ate)
+      .eq('empresa_id', tenantStore.selectedEmpresaId) // Agora é seguro!
       .order('nome_completo', { ascending: true })
-
+      
     if (error) throw error
 
     colaboradores.value = data || []
@@ -493,7 +544,6 @@ const fetchColaboradores = async () => {
   } catch (error) {
     console.error(error)
   } finally {
-    // Pequeno timeout opcional para evitar o "flash" se a internet for rápida demais
     setTimeout(() => { isLoading.value = false }, 400)
   }
 }
@@ -506,10 +556,6 @@ const mudarPagina = (novaPagina: number) => {
     fetchColaboradores() // Chama o Supabase com o novo range
   }
 }
-
-onMounted(() => {
-  fetchColaboradores()
-})
 
 const fetchSolicitacoes = async () => {
   const { data, error } = await supabase
