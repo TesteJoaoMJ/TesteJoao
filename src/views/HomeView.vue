@@ -6,7 +6,7 @@
         <div class="navbar-left">
           <div class="seletor-grupo">
             <label class="seletor-label">Selecione a empresa</label>
-              <div v-if="isLoading" class="skeleton-item h-10 w-64 rounded"></div>
+              <div v-if="isLoading" class="skeleton-item rounded" style="width: 200px; height: 35px;"></div>
             <select 
             v-else
             v-model="tenantStore.selectedEmpresaId" 
@@ -27,11 +27,9 @@
       </nav>
       <div class="navbar-right">
         <div class="nav-divider"></div>
-        <div class="user-profile">
-          <!-- Skeleton do Perfil de Usuário -->
           <template v-if="isLoading">
-            <div class="skeleton-item h-5 w-32 rounded"></div>
-            <div class="skeleton-item h-6 w-16 rounded-full"></div>
+            <div class="skeleton-item rounded" style="width: 140px; height: 20px;"></div>
+            <div class="skeleton-item rounded-full" style="width: 60px; height: 24px;"></div>
           </template>
           
           <template v-else>
@@ -40,7 +38,6 @@
               {{ userRole.toUpperCase() }}
             </span>
           </template>
-        </div>
         
         <button @click="toggleTheme" class="btn-white">
           <span v-if="theme === 'light'">
@@ -83,11 +80,10 @@
           <p class="page-subtitle">Controle de colaboradores e solicitações funcionais.</p>
         </div>
         <div class="action-bar">
-          <!-- Skeleton da Action Bar -->
           <template v-if="isLoading">
-            <div class="skeleton-item h-10 w-32 rounded"></div>
-            <div class="skeleton-item h-10 w-32 rounded"></div>
-            <div class="skeleton-item h-10 w-40 rounded"></div>
+            <div class="skeleton-item rounded" style="width: 140px; height: 36px;"></div>
+            <div class="skeleton-item rounded" style="width: 110px; height: 36px;"></div>
+            <div class="skeleton-item rounded" style="width: 160px; height: 36px;"></div>
           </template>
           
           <template v-else>
@@ -109,13 +105,12 @@
       </div>
 
       <div class="card-grid filter-row">
-        <!-- Skeleton dos Filtros -->
         <template v-if="isLoading">
           <div class="search-wrapper" style="flex: 1;">
-            <div class="skeleton-item h-10 w-full rounded"></div>
+            <div class="skeleton-item rounded" style="width: 100%; height: 42px;"></div>
           </div>
-          <div class="skeleton-item h-10 w-40 rounded"></div>
-          <div class="skeleton-item h-10 w-48 rounded"></div>
+          <div class="skeleton-item rounded" style="width: 160px; height: 42px;"></div>
+          <div class="skeleton-item rounded" style="width: 180px; height: 42px;"></div>
         </template>
         
         <template v-else>
@@ -139,36 +134,35 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th><div class="skeleton-item h-4 w-48"></div></th>
-                <th><div class="skeleton-item h-4 w-32"></div></th>
-                <th><div class="skeleton-item h-4 w-32"></div></th>
-                <th><div class="skeleton-item h-4 w-20"></div></th>
-                <th class="align-right"><div class="skeleton-item h-4 w-32 ml-auto"></div></th>
+                <th><div class="skeleton-item rounded" style="width: 120px; height: 16px;"></div></th>
+                <th><div class="skeleton-item rounded" style="width: 100px; height: 16px;"></div></th>
+                <th><div class="skeleton-item rounded" style="width: 110px; height: 16px;"></div></th>
+                <th><div class="skeleton-item rounded" style="width: 60px; height: 16px;"></div></th>
+                <th class="align-right"><div class="skeleton-item rounded ml-auto" style="width: 80px; height: 16px;"></div></th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="i in 5" :key="i">
-                <td><div class="skeleton-item h-5 w-48 rounded"></div></td>
-                <td><div class="skeleton-item h-5 w-32 rounded"></div></td>
-                <td><div class="skeleton-item h-5 w-32 rounded"></div></td>
-                <td><div class="skeleton-item h-6 w-20 rounded-full"></div></td>
+                <td><div class="skeleton-item rounded" style="width: 150px; height: 20px;"></div></td>
+                <td><div class="skeleton-item rounded" style="width: 120px; height: 20px;"></div></td>
+                <td><div class="skeleton-item rounded" style="width: 130px; height: 20px;"></div></td>
+                <td><div class="skeleton-item rounded-full" style="width: 70px; height: 24px;"></div></td>
                 <td class="align-right">
                   <div class="action-buttons">
-                    <div class="skeleton-item h-8 w-8 rounded"></div>
-                    <div class="skeleton-item h-8 w-8 rounded"></div>
-                    <div class="skeleton-item h-8 w-8 rounded"></div>
-                    <div class="skeleton-item h-8 w-8 rounded"></div>
+                    <div class="skeleton-item rounded" style="width: 28px; height: 28px;"></div>
+                    <div class="skeleton-item rounded" style="width: 28px; height: 28px;"></div>
+                    <div class="skeleton-item rounded" style="width: 28px; height: 28px;"></div>
+                    <div class="skeleton-item rounded" style="width: 28px; height: 28px;"></div>
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
-          <!-- Skeleton da Paginação -->
           <div class="pagination-container" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-            <div class="skeleton-item h-4 w-32"></div>
+            <div class="skeleton-item rounded" style="width: 100px; height: 20px;"></div>
             <div style="display: flex; gap: 10px;">
-              <div class="skeleton-item h-8 w-24 rounded"></div>
-              <div class="skeleton-item h-8 w-24 rounded"></div>
+              <div class="skeleton-item rounded" style="width: 85px; height: 35px;"></div>
+              <div class="skeleton-item rounded" style="width: 85px; height: 35px;"></div>
             </div>
           </div>
         </div>
@@ -232,7 +226,6 @@
               </button>
             </div>
           </div>
-          <!-- Empty State suave -->
           <div v-if="colaboradoresFiltrados.length === 0" class="empty-state-simple">
             Nenhum colaborador encontrado.
           </div>
@@ -240,7 +233,6 @@
       </Transition>
     </main>
 
-    <!-- O resto dos modais (isModalOpen, isModalLinhaTempoOpen, etc) permanecem idênticos -->
     <div v-if="isModalOpen" class="modal-backdrop" @click.self="fecharModal">
       <div class="modal-card">
         <header class="modal-header">
@@ -458,7 +450,7 @@ const userRole = ref<string>('user')
 const usuarioAtual = ref<any>(null)
 const colaboradores = ref<any[]>([])
 const solicitacoesPendentes = ref<any[]>([])
-const isLoading = ref(true) // Variável global unificada controlando TUDO
+const isLoading = ref(true) 
 const totalColaboradores = ref(0)
 const paginaAtual = ref(1)
 const itensPorPagina = 10 
@@ -474,14 +466,12 @@ const colabSelecionado = ref<any>(null)
 const erros = ref<Record<string, string>>({})
 const feedback = ref({ mensagem: '', tipo: '' })
 
-// Filtros
 const filtroBusca = ref('')
 const filtroStatus = ref('')
 const filtroDepto = ref('')
 const filtroTimelineBusca = ref('')
 const filtroTimelineTipo = ref('')
 
-// Segurança
 const contadorAcoes = ref(0)
 const limiteAcoes = 3
 const isModalSenhaOpen = ref(false)
@@ -489,13 +479,11 @@ const senhaConfirmacao = ref('')
 const acaoPendente = ref<Function | null>(null)
 const uploading = ref(false)
 
-// Variáveis de arquivo
 const fileToUpload = ref<File | null>(null)
 const filePreview = ref<string | null>(null)
 const filePreviewType = ref<string>('')
 const fileInput = ref<HTMLInputElement | null>(null)
   
-// --- COMPONENTES COMPUTADOS ---
 const departamentosUnicos = computed(() => [...new Set(colaboradores.value.map(c => c.departamento))])
 
 const colaboradoresFiltrados = computed(() => {
@@ -518,7 +506,6 @@ const timelineFiltrada = computed(() => {
 
 const totalPaginas = computed(() => Math.ceil(totalColaboradores.value / itensPorPagina))
 
-// --- MÉTODOS DE BUSCA (Sem manipular o isLoading dentro deles) ---
 async function fetchEmpresas() {
   const { data, error } = await supabase.from('empresas').select('id, nome').order('nome')
   if (error) {
@@ -565,9 +552,8 @@ const carregarDocumentos = async (id: string) => {
   documentosColab.value = data || []
 }
 
-// --- INICIALIZAÇÃO CONTROLADA ---
 onMounted(async () => {
-  isLoading.value = true // Trava tudo de uma vez
+  isLoading.value = true 
   
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) { router.push('/'); return }
@@ -576,18 +562,15 @@ onMounted(async () => {
   const { data: perfil } = await supabase.from('perfis').select('role').eq('id', session.user.id).single()
   userRole.value = perfil?.role || 'user'
   
-  // Executa de forma centralizada e linear
   await fetchEmpresas()
   await fetchColaboradores()
   if (userRole.value === 'adimim') {
     await fetchSolicitacoes()
   }
   
-  // Solta o bloqueio após TUDO estar finalizado com sucesso
   setTimeout(() => { isLoading.value = false }, 400)
 })
 
-// --- NAVEGAÇÃO E AÇÕES (Envelopadas com isLoading) ---
 const mudarPagina = async (novaPagina: number) => {
   if (novaPagina >= 1 && novaPagina <= totalPaginas.value) {
     isLoading.value = true
@@ -699,7 +682,6 @@ const desligarColaborador = async (colab: any) => {
   isLoading.value = false
 }
 
-// --- UTILITÁRIOS / MODAIS ---
 const abrirModalSolicitacoes = () => { fetchSolicitacoes(); isModalSolicitacoesOpen.value = true }
 const abrirModalNovo = () => { isEditando.value = false; colabEmEdicao.value = { status: 'Ativo' }; isModalOpen.value = true }
 
@@ -737,7 +719,6 @@ const handleLogout = async () => { await supabase.auth.signOut(); router.push('/
 const formatarData = (d: string) => d ? new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '-'
 const mostrarFeedback = (m: string, t: string) => { feedback.value = { mensagem: m, tipo: t }; setTimeout(() => feedback.value = { mensagem: '', tipo: '' }, 3000) }
 
-// --- MÁSCARAS E ARQUIVOS ---
 const aplicarMascaraCPF = (e: any) => {
   let v = e.target.value.replace(/\D/g, '')
   if (v.length > 11) v = v.slice(0, 11)
@@ -784,7 +765,6 @@ const visualizarDocumento = async (path: string) => {
   if (data?.signedUrl) window.open(data.signedUrl, '_blank')
 }
 
-// --- EXPORTAÇÃO ---
 const exportarCSV = () => {
   const SEPARADOR = ';'
   const cabecalho = ['Nome', 'CPF', 'Email', 'Cargo', 'Depto', 'Status', 'Admissao']
@@ -887,16 +867,7 @@ const imprimirDossie = (c: any) => {
   color: var(--text-primary);
   transition: all 0.2s;
 }
-.card-grid {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  transition: background-color 0.3s, border-color 0.3s;
-}
 
-/* Linha de Filtros */
 .filter-row {
   display: flex;
   gap: 15px;
@@ -904,52 +875,11 @@ const imprimirDossie = (c: any) => {
   flex-wrap: wrap;
 }
 
-/* Inputs e Selects */
-.input-search, 
-.input-select {
-  background-color: var(--bg-input);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  padding: 10px 15px;
-  border-radius: 6px;
-  outline: none;
-  transition: all 0.2s;
-}
-
-.input-search:focus, 
-.input-select:focus {
-  border-color: var(--accent);
-}
-
-/* Tabela */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  color: var(--text-primary);
-}
-
-.data-table th {
-  text-align: left;
-  padding: 12px;
-  border-bottom: 2px solid var(--border-color);
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-.data-table td {
-  padding: 12px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.data-table tbody tr:hover {
-  background-color: var(--table-hover);
-}
-
-/* Botões de Ação */
+/* Botões de Ação Específicos */
 .btn-icon {
   background: transparent;
   border: none;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   cursor: pointer;
   padding: 5px;
   border-radius: 4px;
@@ -964,8 +894,8 @@ const imprimirDossie = (c: any) => {
 }
 
 .btn-icon:hover {
-  background-color: var(--bg-input);
-  color: var(--accent);
+  background-color: var(--bg-app);
+  color: var(--primary);
 }
 
 .btn-icon.danger:hover {
@@ -973,7 +903,6 @@ const imprimirDossie = (c: any) => {
   background-color: rgba(231, 76, 60, 0.1);
 }
 
-/* Alinhamentos */
 .align-right {
   text-align: right;
 }
@@ -984,70 +913,10 @@ const imprimirDossie = (c: any) => {
   gap: 8px;
 }
 
-/* Transição de Fade */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* SKELETON ANIMATION */
-.skeleton-item {
-  background-color: #e2e8f0; /* Cor Light */
-  position: relative;
-  overflow: hidden;
-  border-radius: 15px;
-}
-
-/* Efeito Shimmer (Brilho movendo) */
-.skeleton-item::after {
-  content: "";
-  position: absolute;
-  top: 0; right: 0; bottom: 0; left: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  100% { transform: translateX(100%); }
-}
-
-/* Suporte ao Dark Mode no Skeleton */
-:global(.dark) .skeleton-item {
-  background-color: #2d3748;
-}
-:global(.dark) .skeleton-item::after {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-}
-
-/* Utilitários de Skeleton */
-.h-4 { height: 1rem; }
-.h-5 { height: 1.25rem; }
-.h-6 { height: 1.5rem; }
-.h-8 { height: 2rem; }
-.h-10 { height: 2.5rem; }
-.w-12 { width: 3rem; }
-.w-16 { width: 4rem; }
-.w-20 { width: 5rem; }
-.w-24 { width: 6rem; }
-.w-32 { width: 8rem; }
-.w-40 { width: 10rem; }
-.w-48 { width: 12rem; }
-.w-64 { width: 16rem; }
-.w-full { width: 100%; }
-.rounded { border-radius: 4px; }
-.rounded-full { border-radius: 9999px; }
-.ml-auto { margin-left: auto; }
-
-/* Empty State */
 .empty-state-simple {
   padding: 40px;
   text-align: center;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-style: italic;
 }
 

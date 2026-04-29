@@ -727,19 +727,7 @@ button {
 .section-title svg { width: 20px; height: 20px; color: var(--primary); }
 .section-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
 
-.file-upload-wrapper {
-  margin-bottom: 1.5rem;
-  background: var(--bg-surface);
-  color: var(--text-main);
-  
-  /* Borda Unificada */
-  border: 1px solid var(--text-primary); 
-  
-  /* Suavização Visual */
-  border-radius: 6px; 
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
-}
+.file-upload-wrapper { margin-bottom: 1.5rem; }
 .hidden-input { display: none; }
 .file-upload-dropzone {
   display: block;
@@ -760,13 +748,9 @@ button {
   padding: 1.25rem; 
   cursor: default; 
   border-color: var(--border); 
-  border-width: 1px;
 }
 
-.dropzone-content { display: flex;
-   flex-direction: column;
-    align-items: center;
-     gap: 0.5rem; }
+.dropzone-content { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
 .upload-icon { width: 32px; height: 32px; color: var(--text-muted); }
 .file-upload-dropzone:hover .upload-icon { color: var(--primary); }
 .upload-text { font-weight: 500; color: var(--text-main); margin: 0; }
@@ -814,44 +798,3 @@ button {
 .doc-action { padding: 0.35rem 0.75rem; font-size: 0.8rem; border-radius: 4px; display: inline-flex; align-items: center; color: var(--text-main); border: 1px solid var(--border); background: transparent;}
 .doc-action:hover { background: var(--bg-surface-hover); border-color: #404040; }
 .doc-action svg { width: 14px; height: 14px; }
-
-.seletor-grupo {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.seletor-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-main);
-  opacity: 0.8;
-}
-
-.navbar-select {
-  background-color: var(--bg-input);
-  color: var(--text-input);
-  border: 1px solid var(--border-input);
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 0.9rem;
-  outline: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  /* Garante que o fundo mude em navegadores mobile */
-  appearance: none; 
-  -webkit-appearance: none;
-}
-
-/* Estilo para as opções dentro do dropdown */
-.navbar-select option {
-  background-color: var(--bg-input);
-  color: var(--text-input);
-  text-align: center;
-}
-
-.navbar-select:focus {
-  border-color: var(--vault-accent); /* Usa o azul que definimos para o cofre */
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-}
