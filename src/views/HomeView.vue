@@ -1,71 +1,68 @@
 <template>
   <div class="app-container header">
     <header class="navbar">
-      <nav class="navbar">
-
-        <div class="navbar-left">
-          <div class="seletor-grupo">
-            <label class="seletor-label">Selecione a empresa</label>
-              <div v-if="isLoading" class="skeleton-item rounded" style="width: 200px; height: 35px;"></div>
-            <select 
+      <LoadingView :isVisible="isFirstLoad" title="Bem Vindo!" message="Preparando seu ambiente, aguarde um momento..." />
+      <LoadingView :isVisible="isLoggingOut" title="Até Logo" message="Encerrando a sessão de forma segura..." />
+      
+      <div class="navbar-left">
+        <div class="seletor-grupo">
+          <label class="seletor-label">Selecione a empresa</label>
+          <div v-if="isLoading" class="skeleton-item rounded" style="width: 200px; height: 35px;"></div>
+          <select 
             v-else
             v-model="tenantStore.selectedEmpresaId" 
             class="navbar-select"
             :disabled="isLoading"
+            @change="fetchColaboradores"
           >
             <option disabled value="">Selecione uma empresa</option>
-            <option 
-              v-for="empresa in empresas" 
-              :key="empresa.id" 
-              :value="empresa.id"
-            >
+            <option v-for="empresa in empresas" :key="empresa.id" :value="empresa.id">
               {{ empresa.nome }}
             </option>
           </select>
-          </div>
         </div>
-      </nav>
+      </div>
+
       <div class="navbar-right">
+        
+        <template v-if="userRole === 'adimim' && !isLoading">
+          <select class="input-select" style="min-width: 180px; border-color: var(--primary);" @change="lidarComAcoesRapidas($event)">
+            <option value="" disabled selected>⚙️ Ações Rápidas...</option>
+            <option value="novo_usuario">👤 Novo Usuário (Acesso)</option>
+            <option value="novo_setor">🏢 Cadastrar Novo Setor</option>
+          </select>
+        </template>
+
         <div class="nav-divider"></div>
-          <template v-if="isLoading">
-            <div class="skeleton-item rounded" style="width: 140px; height: 20px;"></div>
-            <div class="skeleton-item rounded-full" style="width: 60px; height: 24px;"></div>
-          </template>
-          
-          <template v-else>
-            <span class="user-email">{{ usuarioAtual?.email || 'Carregando...' }}</span>
-            <span v-if="userRole" class="badge" :class="userRole === 'adimim' ? 'ativo' : 'desligado'">
+        
+        <template v-if="isLoading">
+          <div class="skeleton-item rounded" style="width: 140px; height: 20px;"></div>
+          <div class="skeleton-item rounded-full" style="width: 60px; height: 24px;"></div>
+        </template>
+        <template v-else>
+          <div class="user-info" style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2;">
+            <span v-if="userRole" class="badge" :class="userRole === 'adimim' ? 'ativo' : 'user'" style="font-size: 0.7rem; margin-top: 2px;">
               {{ userRole.toUpperCase() }}
             </span>
-          </template>
+            <span class="user-email" style="font-size: 0.9rem; font-weight: 500;">{{ usuarioAtual?.email || 'Carregando...' }}</span>
+          </div>
+        </template>
         
-        <button @click="toggleTheme" class="btn-white">
+        <button @click="toggleTheme" class="btn-white btn-icon" :title="theme === 'light' ? 'Mudar para Modo Escuro' : 'Mudar para Modo Claro'">
           <span v-if="theme === 'light'">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;">
-              <path d="M9 18h6"></path>
-              <path d="M10 22h4"></path>
-              <path d="M12 2a7 7 0 0 0-7 7c0 2.32 1.27 4.35 3.16 5.41a2 2 0 0 0 .84 1.59L9 18h6l0-1a2 2 0 0 0 .84-1.59A7 7 0 0 0 12 2z"></path>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
             </svg>
-            Modo Escuro
           </span>
           <span v-else>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="yellow" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;">
-              <path d="M9 18h6"></path>
-              <path d="M10 22h4"></path>
-              <path d="M12 2a7 7 0 0 0-7 7c0 2.32 1.27 4.35 3.16 5.41a2 2 0 0 0 .84 1.59L9 18h6l0-1a2 2 0 0 0 .84-1.59A7 7 0 0 0 12 2z"></path>
-              <line x1="12" y1="2" x2="12" y2="2"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="yellow" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path>
             </svg>
-            Modo Claro
           </span>
         </button>
-        <button class="btn-outline" @click="handleLogout">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+        <button class="btn-outline danger" @click="handleLogout" title="Encerrar Sessão">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px; vertical-align: middle;">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
           </svg>
           Sair
@@ -87,11 +84,16 @@
           </template>
           
           <template v-else>
+            <span class="badge warning" style="margin-right: 10px;" v-if="solicitacoesPendentes.length >= 1">Pendentes: {{ solicitacoesPendentes.length }}</span>
             <button v-if="userRole === 'adimim'" class="btn-white" @click="abrirModalSolicitacoes">
               Solicitações ({{ solicitacoesPendentes.length }})
             </button>
             
-            <button v-if="userRole === 'adimim'" class="btn-white" @click="exportarCSV">Exportar CSV</button>
+            <select class="ExportacaoSelect" @change="lidarComExportacao($event)">
+              <option value="" disabled selected>Opções de Exportação...</option>
+              <option value="csv" class="ExportarCSV">Exportar como CSV</option>
+              <option value="pdf" class="ExportarPDF">Exportar como PDF</option>
+            </select>
             
             <button v-if="userRole === 'adimim'" class="btn-white" @click="abrirModalNovo">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 5px; vertical-align: text-bottom;">
@@ -109,8 +111,8 @@
           <div class="search-wrapper" style="flex: 1;">
             <div class="skeleton-item" style="width: 100%; height: 42px;"></div>
           </div>
-            <div class="skeleton-item" style="width: 100%; height: 42px;"></div>
-            <div class="skeleton-item" style="width: 100%; height: 42px;"></div>
+          <div class="skeleton-item" style="width: 100%; height: 42px;"></div>
+          <div class="skeleton-item" style="width: 100%; height: 42px;"></div>
         </template>
         
         <template v-else>
@@ -142,7 +144,6 @@
               </tr>
             </thead>
             <tbody>
-              <!-- Alterado de 5 para 10 aqui na linha abaixo -->
               <tr v-for="i in 10" :key="i">
                 <td><div class="skeleton-item rounded" style="width: 150px; height: 20px;"></div></td>
                 <td><div class="skeleton-item rounded" style="width: 120px; height: 20px;"></div></td>
@@ -206,37 +207,87 @@
               </tr>
             </tbody>
           </table>
-          <div class="pagination-container">
+          <div v-if="colaboradoresFiltrados.length === 0" class="empty-state-simple">
+            Nenhum colaborador encontrado.
+          </div>
+          <div v-if="colaboradoresFiltrados.length > 0" class="pagination-container">
             <span class="pagination-info">
               Página {{ paginaAtual }} de {{ totalPaginas }}
             </span>
             <div class="pagination-buttons">
-              <div class="pagination-buttons">
-                <button 
-                  type="button"
-                  class="btn-pagination" 
-                  :disabled="paginaAtual === 1" 
-                  @click.prevent="paginaAnterior"
-                >
-                  Anterior
-                </button>
-                <button 
-                  type="button"
-                  class="btn-pagination" 
-                  :disabled="paginaAtual >= totalPaginas" 
-                  @click.prevent="proximaPagina"
-                >
-                  Próxima
-                </button>
-              </div>
+              <button type="button" class="btn-pagination" :disabled="paginaAtual === 1" @click.prevent="paginaAnterior">
+                Anterior
+              </button>
+              <button type="button" class="btn-pagination" :disabled="paginaAtual >= totalPaginas" @click.prevent="proximaPagina">
+                Próxima
+              </button>
             </div>
-          </div>
-          <div v-if="colaboradoresFiltrados.length === 0" class="empty-state-simple">
-            Nenhum colaborador encontrado.
           </div>
         </div>
       </Transition>
     </main>
+
+    <Transition name="fade">
+      <div v-if="isModalNovoUsuarioOpen" class="modal-backdrop" @click.self="fecharModalNovoUsuario">
+        <div class="modal-card small-modal">
+          <header class="modal-header">
+            <h3>👤 Criar Usuário de Acesso</h3>
+            <button class="btn-close" @click="fecharModalNovoUsuario">✕</button>
+          </header>
+          <div class="form-body">
+            <form @submit.prevent="cadastrarNovoUsuarioAuth">
+              <div class="form-vertical">
+                <div class="input-field">
+                  <label>E-mail Corporativo</label>
+                  <input type="email" v-model="novoUsuarioForm.email" :class="{ error: errosAuth.email }" required />
+                  <p v-if="errosAuth.email" class="error-msg">{{ errosAuth.email }}</p>
+                </div>
+                <div class="input-field">
+                  <label>Senha Provisória</label>
+                  <input type="password" v-model="novoUsuarioForm.password" :class="{ error: errosAuth.password }" required />
+                  <p v-if="errosAuth.password" class="error-msg">{{ errosAuth.password }}</p>
+                </div>
+                <div class="input-field">
+                  <label>Nível de Acesso (Role)</label>
+                  <select v-model="novoUsuarioForm.role" required>
+                    <option value="user">Usuário Comum (Visualização)</option>
+                    <option value="rh">Gestor RH (Edição)</option>
+                    <option value="adimim">Administrador (Total)</option>
+                  </select>
+                </div>
+              </div>
+              <footer class="modal-footer">
+                <button type="button" class="btn-white" @click="fecharModalNovoUsuario">Cancelar</button>
+                <button type="submit" class="btn-white success" :disabled="isCadastrandoUsuario">
+                  {{ isCadastrandoUsuario ? 'Processando...' : 'Confirmar Cadastro' }}
+                </button>
+              </footer>
+            </form>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <Transition name="fade">
+      <div v-if="isModalNovoSetorOpen" class="modal-backdrop" @click.self="fecharModalNovoSetor">
+        <div class="modal-card small-modal">
+          <header class="modal-header">
+            <h3>🏢 Novo Setor / Empresa</h3>
+            <button class="btn-close" @click="fecharModalNovoSetor">✕</button>
+          </header>
+          <div class="form-body">
+            <div class="input-field">
+              <label>Nome da Unidade</label>
+              <input type="text" v-model="novoSetorNome" placeholder="Ex: Matriz Tietê" :class="{ error: erroSetor }" />
+            </div>
+            <footer class="modal-footer">
+              <button type="button" class="btn-white" @click="fecharModalNovoSetor">Cancelar</button>
+              <button type="button" class="btn-white success" @click="cadastrarNovoSetor" :disabled="isCadastrandoSetor">Salvar</button>
+            </footer>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <div v-if="isModalOpen" class="modal-backdrop" @click.self="fecharModal">
       <div class="modal-card">
@@ -412,10 +463,11 @@
               <p>Alteração para: {{ sol.dados_novos.nome_completo }}</p>
             </div>
             <div class="sol-actions">
-              <button class="btn-icon danger" @click="rejeitarSolicitacao(sol.id)">✕</button>
-              <button class="btn-icon success" @click="aprovarSolicitacao(sol)">✓</button>
+              <button class="btn-icon danger" @click="rejeitarSolicitacao(sol.id)" title="Rejeitar">✕</button>
+              <button class="btn-icon success" @click="aprovarSolicitacao(sol)" title="Aprovar">✓</button>
             </div>
           </div>
+          <div v-if="solicitacoesPendentes.length === 0" class="empty-state">Nenhuma solicitação pendente no momento.</div>
         </div>
       </div>
     </div>
@@ -424,11 +476,11 @@
       <div class="modal-card" style="max-width: 400px">
         <header class="modal-header"><h3>Confirmação de Segurança</h3></header>
         <div class="form-body">
-          <p>Reintroduza a sua senha para confirmar.</p>
-          <input type="password" v-model="senhaConfirmacao" class="input-search" placeholder="Senha" />
-          <footer class="modal-footer">
+          <p>Reintroduza a sua senha para confirmar essa ação crítica.</p>
+          <input type="password" v-model="senhaConfirmacao" class="input-search" placeholder="Sua senha atual" />
+          <footer class="modal-footer" style="margin-top: 15px;">
             <button class="btn-white" @click="isModalSenhaOpen = false">Cancelar</button>
-            <button class="btn-white" @click="confirmarSenhaSupabase">Confirmar</button>
+            <button class="btn-white danger" @click="confirmarSenhaSupabase">Confirmar Ação</button>
           </footer>
         </div>
       </div>
@@ -446,6 +498,11 @@ import { useRouter } from 'vue-router'
 import { supabase } from '../lib/supabase'
 import { useTheme } from '../composables/useDarkMode'
 import { useTenantStore } from '@/stores/tenant'
+import LoadingView from '../composables/LoadingView.vue';
+
+const isFirstLoad = ref(true)
+const isLoading = ref(false)
+const isLoggingOut = ref(false)
 
 const empresas = ref<{ id: string, nome: string }[]>([])
 const tenantStore = useTenantStore()
@@ -455,7 +512,6 @@ const userRole = ref<string>('user')
 const usuarioAtual = ref<any>(null)
 const colaboradores = ref<any[]>([])
 const solicitacoesPendentes = ref<any[]>([])
-const isLoading = ref(true) 
 const totalColaboradores = ref(0)
 const paginaAtual = ref(1)
 const itensPorPagina = 10
@@ -488,6 +544,27 @@ const fileToUpload = ref<File | null>(null)
 const filePreview = ref<string | null>(null)
 const filePreviewType = ref<string>('')
 const fileInput = ref<HTMLInputElement | null>(null)
+
+const isModalNovoUsuarioOpen = ref(false)
+const isCadastrandoUsuario = ref(false)
+
+const novoUsuarioForm = ref({ 
+  email: '', 
+  password: '', 
+  confirmPassword: '', 
+  role: 'user' 
+})
+
+const errosAuth = ref({ 
+  email: '', 
+  password: '', 
+  confirmPassword: '' 
+})
+
+const isModalNovoSetorOpen = ref(false)
+const isCadastrandoSetor = ref(false)
+const novoSetorNome = ref('')
+const erroSetor = ref('')
   
 const departamentosUnicos = computed(() => [...new Set(colaboradores.value.map(c => c.departamento))])
 
@@ -511,6 +588,88 @@ const timelineFiltrada = computed(() => {
 
 const totalPaginas = computed(() => Math.ceil(totalColaboradores.value / itensPorPagina))
 
+// --- FUNÇÕES DE AÇÕES RÁPIDAS DO ADMIN ---
+const lidarComAcoesRapidas = (event: Event) => {
+  const select = event.target as HTMLSelectElement
+  const acao = select.value
+
+  if (acao === 'novo_usuario') {
+    abrirModalNovoUsuarioAuth()
+  } else if (acao === 'novo_setor') {
+    abrirModalNovoSetor()
+  }
+
+  // Reseta o select para o estado inicial para permitir novos cliques na mesma opção depois
+  select.value = ''
+}
+
+// Lógica Novo Usuário (Supabase Auth)
+const abrirModalNovoUsuarioAuth = () => {
+  novoUsuarioForm.value = { email: '', password: '', confirmPassword: '', role: 'user' }
+  errosAuth.value = { email: '', password: '', confirmPassword: '' }
+  isModalNovoUsuarioOpen.value = true
+}
+
+const fecharModalNovoUsuario = () => {
+  isModalNovoUsuarioOpen.value = false
+}
+
+const cadastrarNovoUsuarioAuth = async () => {
+  // Limpa erros anteriores
+  errosAuth.value = { email: '', password: '', confirmPassword: '' }
+
+  // Validações básicas de UX
+  if (!novoUsuarioForm.value.email.includes('@')) return errosAuth.value.email = "E-mail inválido"
+  if (novoUsuarioForm.value.password.length < 6) return errosAuth.value.password = "Mínimo 6 caracteres"
+  if (novoUsuarioForm.value.password !== novoUsuarioForm.value.confirmPassword) {
+    return errosAuth.value.confirmPassword = "As senhas não coincidem"
+  }
+
+  isCadastrandoUsuario.value = true
+
+  // CORREÇÃO: Chamada correta ao signUp com metadados para o trigger do banco
+  const { error } = await supabase.auth.signUp({
+    email: novoUsuarioForm.value.email,
+    password: novoUsuarioForm.value.password,
+    options: { 
+      data: { 
+        role: novoUsuarioForm.value.role 
+      } 
+    }
+  })
+
+  isCadastrandoUsuario.value = false
+
+  if (error) {
+    mostrarFeedback(error.message, 'erro')
+  } else {
+    mostrarFeedback("Usuário criado com sucesso!", 'sucesso')
+    fecharModalNovoUsuario()
+  }
+}
+
+// Lógica Novo Setor / Empresa
+const abrirModalNovoSetor = () => {
+  novoSetorNome.value = ''
+  erroSetor.value = ''
+  isModalNovoSetorOpen.value = true
+}
+
+const fecharModalNovoSetor = () => {
+  isModalNovoSetorOpen.value = false
+}
+
+const cadastrarNovoSetor = async () => {
+  if (!novoSetorNome.value) return erroSetor.value = "Campo obrigatório"
+  isCadastrandoSetor.value = true
+  const { error } = await supabase.from('empresas').insert([{ nome: novoSetorNome.value }])
+  isCadastrandoSetor.value = false
+  if (error) mostrarFeedback(error.message, 'erro')
+  else { mostrarFeedback("Setor criado!", 'sucesso'); fetchEmpresas(); fecharModalNovoSetor() }
+}
+
+// --- FIM FUNÇÕES NOVAS ---
+
 async function fetchEmpresas() {
   const { data, error } = await supabase.from('empresas').select('id, nome').order('nome')
   if (error) {
@@ -525,8 +684,7 @@ async function fetchEmpresas() {
 
 const fetchColaboradores = async () => {
   if (!tenantStore.selectedEmpresaId) return;
-  
-  // Correção: (1 - 1) * 10 = 0 (Página 1 começa no índice 0)
+    
   const from = (paginaAtual.value - 1) * itensPorPagina;
   const to = from + itensPorPagina - 1;
 
@@ -537,16 +695,15 @@ const fetchColaboradores = async () => {
     .eq('empresa_id', tenantStore.selectedEmpresaId)
     .order('nome_completo', { ascending: true })
     
-  if (error) {
-    console.error(error)
-    return
+  if (!error) {
+    colaboradores.value = data || []
+    totalColaboradores.value = count || 0
   }
-  colaboradores.value = data || []
-  totalColaboradores.value = count || 0
+  
+  isLoading.value = false;
 }
 
 const proximaPagina = () => {
-  // Adicionei uma trava de segurança extra aqui
   if (paginaAtual.value < totalPaginas.value) {
     paginaAtual.value++;
     fetchColaboradores();
@@ -554,7 +711,6 @@ const proximaPagina = () => {
 };
 
 const paginaAnterior = () => {
-  // A página mínima no seu sistema é 1, não 0
   if (paginaAtual.value > 1) { 
     paginaAtual.value--;
     fetchColaboradores();
@@ -579,19 +735,27 @@ onMounted(async () => {
   isLoading.value = true 
   
   const { data: { session } } = await supabase.auth.getSession()
-  if (!session) { router.push('/'); return }
+  if (!session) { 
+    router.push('/')
+    return 
+  }
   
   usuarioAtual.value = session.user
+  
   const { data: perfil } = await supabase.from('perfis').select('role').eq('id', session.user.id).single()
   userRole.value = perfil?.role || 'user'
   
   await fetchEmpresas()
   await fetchColaboradores()
+  
   if (userRole.value === 'adimim') {
     await fetchSolicitacoes()
   }
   
-  setTimeout(() => { isLoading.value = false }, 400)
+  setTimeout(() => { 
+    isFirstLoad.value = false 
+    isLoading.value = false
+  }, 800)
 })
 
 const handleSalvarColaborador = async () => {
@@ -599,6 +763,11 @@ const handleSalvarColaborador = async () => {
   if (!colabEmEdicao.value.nome_completo) erros.value.nome_completo = 'Obrigatório'
   if (!colabEmEdicao.value.cpf) erros.value.cpf = 'Obrigatório'
   if (Object.keys(erros.value).length > 0) return mostrarFeedback('Verifique os campos obrigatórios.', 'erro')
+
+  // Garante o vínculo com a empresa selecionada atualmente
+  if (!colabEmEdicao.value.empresa_id) {
+    colabEmEdicao.value.empresa_id = tenantStore.selectedEmpresaId
+  }
 
   if (userRole.value === 'adimim' || !isEditando.value) {
     await executarComVerificacao(salvarDireto)
@@ -633,7 +802,7 @@ const salvarDireto = async () => {
     mostrarFeedback('Atualizado com sucesso!', 'sucesso')
   } else {
     const { data } = await supabase.from('colaboradores').insert([c]).select()
-    if (data) {
+    if (data && data.length > 0) {
       await supabase.from('linha_do_tempo').insert([{ colaborador_id: data[0].id, tipo_evento: 'Admissão', descricao: `Admitido no cargo ${data[0].cargo}`, data_evento: data[0].data_admissao }])
     }
     mostrarFeedback('Cadastrado com sucesso!', 'sucesso')
@@ -685,7 +854,7 @@ const rejeitarSolicitacao = async (id: string) => {
 };
 
 const desligarColaborador = async (colab: any) => {
-  const motivo = prompt('Motivo do desligamento:')
+  const motivo = prompt('Motivo do desligamento (Ex: Pedido de Demissão, Justa Causa):')
   if (!motivo) return
   
   isLoading.value = true
@@ -729,7 +898,14 @@ const confirmarSenhaSupabase = async () => {
   else mostrarFeedback('Senha incorreta!', 'erro')
 }
 
-const handleLogout = async () => { await supabase.auth.signOut(); router.push('/') }
+const handleLogout = async () => { 
+  isLoggingOut.value = true;
+  setInterval(() => {
+    supabase.auth.signOut();
+    router.push('/') 
+  }, 2000);
+}
+
 const formatarData = (d: string) => d ? new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '-'
 const mostrarFeedback = (m: string, t: string) => { feedback.value = { mensagem: m, tipo: t }; setTimeout(() => feedback.value = { mensagem: '', tipo: '' }, 3000) }
 
@@ -770,13 +946,95 @@ const uploadDocumentoCofre = async () => {
     await supabase.from('linha_do_tempo').insert([{ colaborador_id: colabEmEdicao.value.id, tipo_evento: 'Upload de Documento', descricao: `Documento: ${fileToUpload.value.name}`, arquivo_url: filePath, data_evento: new Date().toISOString() }])
     limparPreview(); carregarDocumentos(colabEmEdicao.value.id)
     mostrarFeedback('Arquivo enviado!', 'sucesso')
+  } else {
+    mostrarFeedback('Erro ao enviar documento.', 'erro')
   }
   uploading.value = false
 }
 
 const visualizarDocumento = async (path: string) => {
-  const { data } = await supabase.storage.from('documentos_colaboradores').createSignedUrl(path, 60)
+  const { data, error } = await supabase.storage.from('documentos_colaboradores').createSignedUrl(path, 60)
   if (data?.signedUrl) window.open(data.signedUrl, '_blank')
+  if (error) mostrarFeedback('Erro ao abrir documento.', 'erro')
+}
+
+const lidarComExportacao = (event: Event) => {
+  const select = event.target as HTMLSelectElement
+  const acao = select.value
+
+  if (acao === 'csv') {
+    exportarCSV()
+  } else if (acao === 'pdf') {
+    exportarPDF()
+  }
+  select.value = ''
+}
+
+const exportarPDF = () => {
+  const win = window.open('', '_blank')
+  if (!win) return
+
+  const linhasHtml = colaboradoresFiltrados.value.map(c => `
+    <tr>
+      <td>${c.nome_completo || '-'}</td>
+      <td>${c.cpf || '-'}</td>
+      <td>${c.email || '-'}</td>
+      <td>${c.cargo || '-'}</td>
+      <td>${c.departamento || '-'}</td>
+      <td>${c.status || '-'}</td>
+      <td>${c.data_admissao ? formatarData(c.data_admissao) : '-'}</td>
+    </tr>
+  `).join('')
+
+  win.document.write(`
+    <html>
+      <head>
+        <title>Relatório de Colaboradores</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; color: #333; margin: 0; }
+          .header { text-align: center; margin-bottom: 20px; }
+          .header h2 { margin: 0; color: #1e293b; }
+          .header p { margin: 5px 0 0 0; color: #64748b; font-size: 14px; }
+          table { width: 100%; border-collapse: collapse; font-size: 12px; }
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+          th { background-color: #f4f4f4; font-weight: bold; text-transform: uppercase; }
+          tr:nth-child(even) { background-color: #f9fafb; }
+          @media print {
+            @page { margin: 10mm; size: landscape; }
+            body { padding: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h2>Relatório de Colaboradores</h2>
+          <p>Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>CPF</th>
+              <th>Email</th>
+              <th>Cargo</th>
+              <th>Departamento</th>
+              <th>Status</th>
+              <th>Admissão</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${linhasHtml}
+          </tbody>
+        </table>
+        <script>
+          window.onload = function() { window.print(); };
+          window.onafterprint = function() { window.close(); };
+        <\/script>
+      </body>
+    </html>
+  `)
+  
+  win.document.close()
 }
 
 const exportarCSV = () => {
@@ -788,7 +1046,7 @@ const exportarCSV = () => {
   )
   const csv = '\ufeff' + [cabecalho.join(SEPARADOR), ...linhas].join('\r\n')
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'colaboradores_mj.csv'; link.click()
+  const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'colaboradores.csv'; link.click()
 }
 
 const imprimirDossie = (c: any) => {
@@ -804,7 +1062,7 @@ const imprimirDossie = (c: any) => {
         body { font-family: Arial, sans-serif; font-size: 12px; padding: 20px; color: #333; margin: 0; }
         .header { display: flex; justify-content: space-between; border: 1px solid #000; padding: 15px; margin-bottom: 20px; }
         .header-left { width: 25%; font-weight: bold; font-size: 14px; }
-        .header-center { width: 50%; line-height: 1.4; }
+        .header-center { width: 50%; line-height: 1.4; text-align: center; }
         .header-center h2 { margin: 0 0 5px 0; font-size: 16px; text-transform: uppercase; }
         .header-center p { margin: 0; font-size: 11px; }
         .header-right { width: 25%; text-align: right; line-height: 1.4; }
@@ -823,15 +1081,8 @@ const imprimirDossie = (c: any) => {
     <body>
       <div class="header">
         <div class="header-center">
-          <h2>CONFECCOES MJ</h2>
-          <p>CNPJ: 53.756.096/0001-89</p>
-          <p>RUA LUIZ MONTANHAN, 1302 (BARRACÃO TERRA NOVA)</p>
-          <p>Tietê/SP - CEP: 18530-000</p>
-          <p>(15) 9789-0653 - (15) 99763-7941</p>
-          <p>mrjackyfinanceiro@gmail.com</p>
-        </div>
-        <div class="header-right">
-          <h3>DOSSIÊ DO COLABORADOR</h3>
+          <h2>DOSSIÊ DE COLABORADOR</h2>
+          <p>Documento de uso interno gerado pelo sistema</p>
         </div>
       </div>
       <div class="section-title">DADOS PESSOAIS</div>
@@ -843,7 +1094,6 @@ const imprimirDossie = (c: any) => {
           <tr><th>Telefone:</th><td>${c.telefone || ''}</td></tr>
           <tr><th>Endereço:</th><td>${c.endereco || ''}</td></tr>
         </tbody>
-        
       </table>
       <div class="section-title">DADOS PROFISSIONAIS</div>
       <table>
@@ -857,7 +1107,7 @@ const imprimirDossie = (c: any) => {
       <div class="footer">
         <div class="signature">Assinatura do Colaborador</div>
       </div>
-      <div class="watermark">Gerado com MJProcess</div>
+      <div class="watermark">Gerado automaticamente pelo sistema de gestão</div>
       <script>
         window.onload = function() { window.print(); };
         window.onafterprint = function() { window.close(); };
@@ -871,4 +1121,43 @@ const imprimirDossie = (c: any) => {
 
 <style scoped>
 @import '../assets/homecss.css';
+
+.ExportacaoSelect {
+  background-color: var(--bg-surface-hover);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none; 
+  -webkit-appearance: none;
+}
+
+.ExportarCSV, .ExportarCSV:hover {
+  background-color: var(--success-bg);
+  color: var(--text-main);
+  text-align: center;  
+}
+.ExportarPDF, .ExportarPDF:hover {
+  background-color: var(--danger-bg);
+  color: var(--text-main);
+  text-align: center;  
+}
+
+/* Tratamento de Erros visuais nos Forms */
+input.error, select.error {
+  border-color: var(--danger) !important;
+  background-color: var(--danger-bg);
+}
+
+.error-message {
+  color: var(--danger);
+  font-size: 0.75rem;
+  margin-top: 4px;
+  display: block;
+  font-weight: 500;
+}
 </style>

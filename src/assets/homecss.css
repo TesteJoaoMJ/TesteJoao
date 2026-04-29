@@ -17,7 +17,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border);
   transition: background 0.3s, border 0.3s;
 }
 
@@ -117,12 +116,12 @@ button {
 }
 
 .btn-outline:hover {
-  background: var(--bg-surface-hover);
+  background: var(--danger);
   color: var(--text-main);
 }
 
 .btn-primary:hover {
-  background: var(--primary-hover);
+  background: var(--danger-bg);
 }
 
 .btn-white {
@@ -292,6 +291,11 @@ button {
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
+}
+
+.badge.user {
+  background: var(--warning);
+  color: var(--text-primary);
 }
 
 .badge.ativo {
