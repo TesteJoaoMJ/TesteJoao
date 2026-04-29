@@ -2,60 +2,71 @@
   <div class="app-container header">
     <header class="navbar">
       <nav class="navbar">
-    <div class="navbar-item">
-      <label class="seletor-label">Selecione a empresa</label>
-      
-      <select 
-        v-model="tenantStore.selectedEmpresaId" 
-        class="navbar-select"
-        :disabled="loading"
-      >
-        <option disabled value="">
-          {{ loading ? 'Carregando...' : 'Selecione uma empresa' }}
-        </option>
-        <option 
-          v-for="empresa in empresas" 
-          :key="empresa.id" 
-          :value="empresa.id"
-        >
-          {{ empresa.nome }}
-        </option>
-      </select>
-    </div>
-  </nav>
+
+        <div class="navbar-left">
+          <div class="seletor-grupo">
+            <label class="seletor-label">Selecione a empresa</label>
+              <div v-if="isLoading" class="skeleton-item h-10 w-64 rounded"></div>
+            <select 
+            v-else
+            v-model="tenantStore.selectedEmpresaId" 
+            class="navbar-select"
+            :disabled="isLoading"
+          >
+            <option disabled value="">Selecione uma empresa</option>
+            <option 
+              v-for="empresa in empresas" 
+              :key="empresa.id" 
+              :value="empresa.id"
+            >
+              {{ empresa.nome }}
+            </option>
+          </select>
+          </div>
+        </div>
+      </nav>
       <div class="navbar-right">
         <div class="nav-divider"></div>
         <div class="user-profile">
-          <span class="user-email">{{ usuarioAtual?.email || 'Carregando...' }}</span>
-          <span v-if="userRole" class="badge" :class="userRole === 'adimim' ? 'ativo' : 'desligado'">
-            {{ userRole.toUpperCase() }}
-          </span>
+          <!-- Skeleton do Perfil de Usuário -->
+          <template v-if="isLoading">
+            <div class="skeleton-item h-5 w-32 rounded"></div>
+            <div class="skeleton-item h-6 w-16 rounded-full"></div>
+          </template>
+          
+          <template v-else>
+            <span class="user-email">{{ usuarioAtual?.email || 'Carregando...' }}</span>
+            <span v-if="userRole" class="badge" :class="userRole === 'adimim' ? 'ativo' : 'desligado'">
+              {{ userRole.toUpperCase() }}
+            </span>
+          </template>
         </div>
-    <button @click="toggleTheme" class="btn-white">
-        <span v-if="theme === 'light'">
+        
+        <button @click="toggleTheme" class="btn-white">
+          <span v-if="theme === 'light'">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;">
-                <path d="M9 18h6"></path>
-                <path d="M10 22h4"></path>
-                <path d="M12 2a7 7 0 0 0-7 7c0 2.32 1.27 4.35 3.16 5.41a2 2 0 0 0 .84 1.59L9 18h6l0-1a2 2 0 0 0 .84-1.59A7 7 0 0 0 12 2z"></path>
+              <path d="M9 18h6"></path>
+              <path d="M10 22h4"></path>
+              <path d="M12 2a7 7 0 0 0-7 7c0 2.32 1.27 4.35 3.16 5.41a2 2 0 0 0 .84 1.59L9 18h6l0-1a2 2 0 0 0 .84-1.59A7 7 0 0 0 12 2z"></path>
             </svg>
             Modo Escuro
-        </span>
-        <span v-else>
+          </span>
+          <span v-else>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="yellow" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;">
-                <path d="M9 18h6"></path>
-                <path d="M10 22h4"></path>
-                <path d="M12 2a7 7 0 0 0-7 7c0 2.32 1.27 4.35 3.16 5.41a2 2 0 0 0 .84 1.59L9 18h6l0-1a2 2 0 0 0 .84-1.59A7 7 0 0 0 12 2z"></path>
-                <line x1="12" y1="2" x2="12" y2="2"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <path d="M9 18h6"></path>
+              <path d="M10 22h4"></path>
+              <path d="M12 2a7 7 0 0 0-7 7c0 2.32 1.27 4.35 3.16 5.41a2 2 0 0 0 .84 1.59L9 18h6l0-1a2 2 0 0 0 .84-1.59A7 7 0 0 0 12 2z"></path>
+              <line x1="12" y1="2" x2="12" y2="2"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
             </svg>
             Modo Claro
-        </span>
-    </button>
+          </span>
+        </button>
         <button class="btn-outline" @click="handleLogout">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
@@ -72,35 +83,55 @@
           <p class="page-subtitle">Controle de colaboradores e solicitações funcionais.</p>
         </div>
         <div class="action-bar">
-          <button v-if="userRole === 'adimim'" class="btn-white" @click="abrirModalSolicitacoes">
-            Solicitações ({{ solicitacoesPendentes.length }})
-          </button>
+          <!-- Skeleton da Action Bar -->
+          <template v-if="isLoading">
+            <div class="skeleton-item h-10 w-32 rounded"></div>
+            <div class="skeleton-item h-10 w-32 rounded"></div>
+            <div class="skeleton-item h-10 w-40 rounded"></div>
+          </template>
           
-          <button v-if="userRole === 'adimim'" class="btn-white" @click="exportarCSV">Exportar CSV</button>
-          
-          <button v-if="userRole === 'adimim'" class="btn-white" @click="abrirModalNovo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 5px; vertical-align: text-bottom;">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Novo Colaborador
-          </button>
+          <template v-else>
+            <button v-if="userRole === 'adimim'" class="btn-white" @click="abrirModalSolicitacoes">
+              Solicitações ({{ solicitacoesPendentes.length }})
+            </button>
+            
+            <button v-if="userRole === 'adimim'" class="btn-white" @click="exportarCSV">Exportar CSV</button>
+            
+            <button v-if="userRole === 'adimim'" class="btn-white" @click="abrirModalNovo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 5px; vertical-align: text-bottom;">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Novo Colaborador
+            </button>
+          </template>
         </div>
       </div>
 
       <div class="card-grid filter-row">
-        <div class="search-wrapper">
-          <input type="text" v-model="filtroBusca" placeholder="Buscar por nome ou CPF..." class="input-search" />
-        </div>
-        <select v-model="filtroStatus" class="input-select">
-          <option value="">Todos os Status</option>
-          <option value="Ativo">Ativos</option>
-          <option value="Desligado">Desligados</option>
-        </select>
-        <select v-model="filtroDepto" class="input-select">
-          <option value="">Todos Departamentos</option>
-          <option v-for="d in departamentosUnicos" :key="d" :value="d">{{ d }}</option>
-        </select>
+        <!-- Skeleton dos Filtros -->
+        <template v-if="isLoading">
+          <div class="search-wrapper" style="flex: 1;">
+            <div class="skeleton-item h-10 w-full rounded"></div>
+          </div>
+          <div class="skeleton-item h-10 w-40 rounded"></div>
+          <div class="skeleton-item h-10 w-48 rounded"></div>
+        </template>
+        
+        <template v-else>
+          <div class="search-wrapper">
+            <input type="text" v-model="filtroBusca" placeholder="Buscar por nome ou CPF..." class="input-search" />
+          </div>
+          <select v-model="filtroStatus" class="input-select">
+            <option value="">Todos os Status</option>
+            <option value="Ativo">Ativos</option>
+            <option value="Desligado">Desligados</option>
+          </select>
+          <select v-model="filtroDepto" class="input-select">
+            <option value="">Todos Departamentos</option>
+            <option v-for="d in departamentosUnicos" :key="d" :value="d">{{ d }}</option>
+          </select>
+        </template>
       </div>
 
       <Transition name="fade" mode="out-in">
@@ -108,21 +139,23 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th><div class="skeleton-item h-4 w-24"></div></th>
+                <th><div class="skeleton-item h-4 w-48"></div></th>
+                <th><div class="skeleton-item h-4 w-32"></div></th>
                 <th><div class="skeleton-item h-4 w-32"></div></th>
                 <th><div class="skeleton-item h-4 w-20"></div></th>
-                <th><div class="skeleton-item h-4 w-16"></div></th>
-                <th class="align-right"><div class="skeleton-item h-4 w-12 ml-auto"></div></th>
+                <th class="align-right"><div class="skeleton-item h-4 w-32 ml-auto"></div></th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="i in 5" :key="i">
                 <td><div class="skeleton-item h-5 w-48 rounded"></div></td>
                 <td><div class="skeleton-item h-5 w-32 rounded"></div></td>
-                <td><div class="skeleton-item h-5 w-24 rounded"></div></td>
+                <td><div class="skeleton-item h-5 w-32 rounded"></div></td>
                 <td><div class="skeleton-item h-6 w-20 rounded-full"></div></td>
                 <td class="align-right">
                   <div class="action-buttons">
+                    <div class="skeleton-item h-8 w-8 rounded"></div>
+                    <div class="skeleton-item h-8 w-8 rounded"></div>
                     <div class="skeleton-item h-8 w-8 rounded"></div>
                     <div class="skeleton-item h-8 w-8 rounded"></div>
                   </div>
@@ -130,6 +163,14 @@
               </tr>
             </tbody>
           </table>
+          <!-- Skeleton da Paginação -->
+          <div class="pagination-container" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="skeleton-item h-4 w-32"></div>
+            <div style="display: flex; gap: 10px;">
+              <div class="skeleton-item h-8 w-24 rounded"></div>
+              <div class="skeleton-item h-8 w-24 rounded"></div>
+            </div>
+          </div>
         </div>
 
         <div v-else key="content" class="card-grid">
@@ -170,36 +211,36 @@
               </tr>
             </tbody>
           </table>
-            <div class="pagination-container">
-      <span class="pagination-info">
-        Página {{ paginaAtual }} de {{ totalPaginas }}
-      </span>
-      <div class="pagination-buttons">
-        <button 
-          class="btn-pagination" 
-          :disabled="paginaAtual === 1" 
-          @click="mudarPagina(paginaAtual - 1)"
-        >
-          Anterior
-        </button>
-        <button 
-          class="btn-pagination" 
-          :disabled="paginaAtual >= totalPaginas" 
-          @click="mudarPagina(paginaAtual + 1)"
-        >
-          Próxima
-        </button>
-      </div>
-      </div>
+          <div class="pagination-container">
+            <span class="pagination-info">
+              Página {{ paginaAtual }} de {{ totalPaginas }}
+            </span>
+            <div class="pagination-buttons">
+              <button 
+                class="btn-pagination" 
+                :disabled="paginaAtual === 1" 
+                @click="mudarPagina(paginaAtual - 1)"
+              >
+                Anterior
+              </button>
+              <button 
+                class="btn-pagination" 
+                :disabled="paginaAtual >= totalPaginas" 
+                @click="mudarPagina(paginaAtual + 1)"
+              >
+                Próxima
+              </button>
+            </div>
+          </div>
           <!-- Empty State suave -->
           <div v-if="colaboradoresFiltrados.length === 0" class="empty-state-simple">
             Nenhum colaborador encontrado.
           </div>
         </div>
       </Transition>
-
     </main>
 
+    <!-- O resto dos modais (isModalOpen, isModalLinhaTempoOpen, etc) permanecem idênticos -->
     <div v-if="isModalOpen" class="modal-backdrop" @click.self="fecharModal">
       <div class="modal-card">
         <header class="modal-header">
@@ -410,7 +451,6 @@ import { useTheme } from '../composables/useDarkMode'
 import { useTenantStore } from '@/stores/tenant'
 
 const empresas = ref<{ id: string, nome: string }[]>([])
-const loading = ref(true)
 const tenantStore = useTenantStore()
 const { theme, toggleTheme } = useTheme()
 const router = useRouter()
@@ -418,10 +458,10 @@ const userRole = ref<string>('user')
 const usuarioAtual = ref<any>(null)
 const colaboradores = ref<any[]>([])
 const solicitacoesPendentes = ref<any[]>([])
-const isLoading = ref(true) // Começa como true para mostrar o loading ao entrar
+const isLoading = ref(true) // Variável global unificada controlando TUDO
 const totalColaboradores = ref(0)
 const paginaAtual = ref(1)
-const itensPorPagina = 10 // Defina a quantidade desejada
+const itensPorPagina = 10 
 
 const timelineColab = ref<any[]>([])
 const documentosColab = ref<any[]>([])
@@ -455,30 +495,7 @@ const filePreview = ref<string | null>(null)
 const filePreviewType = ref<string>('')
 const fileInput = ref<HTMLInputElement | null>(null)
   
-async function fetchEmpresas() {
-  try {
-    const { data, error } = await supabase
-      .from('empresas')
-      .select('id, nome')
-      .order('nome')
-    
-    if (error) throw error
-    empresas.value = data || []
-
-    // Define uma empresa padrão caso não haja nenhuma selecionada
-    if (!tenantStore.selectedEmpresaId && empresas.value.length > 0) {
-      tenantStore.selectedEmpresaId = empresas.value[0]?.id || '';
-    }
-  } catch (err) {
-    console.error('Erro ao carregar empresas:', err)
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(fetchEmpresas)
-
-// --- COMPUTED PROPERTIES ---
+// --- COMPONENTES COMPUTADOS ---
 const departamentosUnicos = computed(() => [...new Set(colaboradores.value.map(c => c.departamento))])
 
 const colaboradoresFiltrados = computed(() => {
@@ -499,76 +516,47 @@ const timelineFiltrada = computed(() => {
   })
 })
 
-// --- INICIALIZAÇÃO ---
-onMounted(async () => {
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) { router.push('/'); return }
-  
-  usuarioAtual.value = session.user
-  const { data: perfil } = await supabase.from('perfis').select('role').eq('id', session.user.id).single()
-  userRole.value = perfil?.role || 'user'
-  
-  // 1º PASSO: Busca as empresas e define a empresa ativa no Store
-  await fetchEmpresas()
-  
-  // 2º PASSO: Agora sim, com a empresa definida, busca os colaboradores
-  await fetchColaboradores()
-  
-  // 3º PASSO: Carrega as solicitações se for admin
-  if (userRole.value === 'adimim') {
-    fetchSolicitacoes()
+const totalPaginas = computed(() => Math.ceil(totalColaboradores.value / itensPorPagina))
+
+// --- MÉTODOS DE BUSCA (Sem manipular o isLoading dentro deles) ---
+async function fetchEmpresas() {
+  const { data, error } = await supabase.from('empresas').select('id, nome').order('nome')
+  if (error) {
+    console.error('Erro ao carregar empresas:', error)
+    return
   }
-})
-
-// --- MÉTODOS DE BUSCA ---
-const fetchColaboradores = async () => {
-  // 1. TRAVA DE SEGURANÇA: Se não tiver empresa selecionada, não faz a busca
-  if (!tenantStore.selectedEmpresaId) return;
-
-  try {
-    isLoading.value = true 
-    const de = (paginaAtual.value - 1) * itensPorPagina
-    const ate = de + itensPorPagina - 1
-
-    const { data, error, count } = await supabase
-      .from('colaboradores')
-      .select('*', { count: 'exact' })
-      .range(de, ate)
-      .eq('empresa_id', tenantStore.selectedEmpresaId) // Agora é seguro!
-      .order('nome_completo', { ascending: true })
-      
-    if (error) throw error
-
-    colaboradores.value = data || []
-    totalColaboradores.value = count || 0
-  } catch (error) {
-    console.error(error)
-  } finally {
-    setTimeout(() => { isLoading.value = false }, 400)
+  empresas.value = data || []
+  if (!tenantStore.selectedEmpresaId && empresas.value.length > 0) {
+    tenantStore.selectedEmpresaId = empresas.value[0]?.id || ''
   }
 }
 
-const totalPaginas = computed(() => Math.ceil(totalColaboradores.value / itensPorPagina))
-// Navegação de página
-const mudarPagina = (novaPagina: number) => {
-  if (novaPagina >= 1 && novaPagina <= totalPaginas.value) {
-    paginaAtual.value = novaPagina
-    fetchColaboradores() // Chama o Supabase com o novo range
+const fetchColaboradores = async () => {
+  if (!tenantStore.selectedEmpresaId) return;
+  const de = (paginaAtual.value - 1) * itensPorPagina
+  const ate = de + itensPorPagina - 1
+
+  const { data, error, count } = await supabase
+    .from('colaboradores')
+    .select('*', { count: 'exact' })
+    .range(de, ate)
+    .eq('empresa_id', tenantStore.selectedEmpresaId)
+    .order('nome_completo', { ascending: true })
+    
+  if (error) {
+    console.error(error)
+    return
   }
+  colaboradores.value = data || []
+  totalColaboradores.value = count || 0
 }
 
 const fetchSolicitacoes = async () => {
-  const { data, error } = await supabase
-    .from('solicitacoes')
-    .select('*')
-    .eq('status', 'Pendente');
-
+  const { data, error } = await supabase.from('solicitacoes').select('*').eq('status', 'Pendente');
   if (error) {
     console.error("Erro na busca de solicitações:", error.message);
     return;
   }
-
-  console.log("Solicitações carregadas:", data); // Verifique se o array vem preenchido no console (F12)
   solicitacoesPendentes.value = data || [];
 };
 
@@ -577,18 +565,44 @@ const carregarDocumentos = async (id: string) => {
   documentosColab.value = data || []
 }
 
-// --- LOGICA DE SALVAR / SOLICITAR ---
+// --- INICIALIZAÇÃO CONTROLADA ---
+onMounted(async () => {
+  isLoading.value = true // Trava tudo de uma vez
+  
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) { router.push('/'); return }
+  
+  usuarioAtual.value = session.user
+  const { data: perfil } = await supabase.from('perfis').select('role').eq('id', session.user.id).single()
+  userRole.value = perfil?.role || 'user'
+  
+  // Executa de forma centralizada e linear
+  await fetchEmpresas()
+  await fetchColaboradores()
+  if (userRole.value === 'adimim') {
+    await fetchSolicitacoes()
+  }
+  
+  // Solta o bloqueio após TUDO estar finalizado com sucesso
+  setTimeout(() => { isLoading.value = false }, 400)
+})
+
+// --- NAVEGAÇÃO E AÇÕES (Envelopadas com isLoading) ---
+const mudarPagina = async (novaPagina: number) => {
+  if (novaPagina >= 1 && novaPagina <= totalPaginas.value) {
+    isLoading.value = true
+    paginaAtual.value = novaPagina
+    await fetchColaboradores()
+    setTimeout(() => { isLoading.value = false }, 300)
+  }
+}
+
 const handleSalvarColaborador = async () => {
-  // 1. Limpa erros e valida campos obrigatórios
   erros.value = {}
   if (!colabEmEdicao.value.nome_completo) erros.value.nome_completo = 'Obrigatório'
   if (!colabEmEdicao.value.cpf) erros.value.cpf = 'Obrigatório'
-  
-  if (Object.keys(erros.value).length > 0) {
-    return mostrarFeedback('Verifique os campos obrigatórios.', 'erro')
-  }
+  if (Object.keys(erros.value).length > 0) return mostrarFeedback('Verifique os campos obrigatórios.', 'erro')
 
-  // 2. Decide se salva direto (ADM ou Novo) ou se cria Solicitação (User editando)
   if (userRole.value === 'adimim' || !isEditando.value) {
     await executarComVerificacao(salvarDireto)
   } else {
@@ -598,28 +612,16 @@ const handleSalvarColaborador = async () => {
 
 const enviarSolicitacao = async () => {
   try {
-    // Criamos uma cópia limpa apenas com os dados de texto/número
     const dadosParaEnvio = JSON.parse(JSON.stringify(colabEmEdicao.value));
-
-    const novaSolicitacao = {
-      colaborador_id: colabEmEdicao.value.id,
-      solicitante_id: usuarioAtual.value.id,
-      solicitante_email: usuarioAtual.value.email,
-      dados_novos: dadosParaEnvio, // Dados limpos
-      status: 'Pendente'
-    }
-
-    const { error } = await supabase
-      .from('solicitacoes')
-      .insert([novaSolicitacao])
-
+    const novaSolicitacao = { colaborador_id: colabEmEdicao.value.id, solicitante_id: usuarioAtual.value.id, solicitante_email: usuarioAtual.value.email, dados_novos: dadosParaEnvio, status: 'Pendente' }
+    
+    const { error } = await supabase.from('solicitacoes').insert([novaSolicitacao])
     if (error) throw error
 
     mostrarFeedback('Solicitação enviada para aprovação!', 'sucesso')
     fecharModal()
-    
   } catch (err) {
-    console.error('Erro detalhado:', err) // VEJA O ERRO NO CONSOLE (F12)
+    console.error('Erro detalhado:', err)
     mostrarFeedback('Erro ao processar solicitação.', 'erro')
   }
 }
@@ -635,83 +637,50 @@ const salvarDireto = async () => {
   } else {
     const { data } = await supabase.from('colaboradores').insert([c]).select()
     if (data) {
-      await supabase.from('linha_do_tempo').insert([{
-        colaborador_id: data[0].id,
-        tipo_evento: 'Admissão',
-        descricao: `Admitido no cargo ${data[0].cargo}`,
-        data_evento: data[0].data_admissao,
-      }])
+      await supabase.from('linha_do_tempo').insert([{ colaborador_id: data[0].id, tipo_evento: 'Admissão', descricao: `Admitido no cargo ${data[0].cargo}`, data_evento: data[0].data_admissao }])
     }
     mostrarFeedback('Cadastrado com sucesso!', 'sucesso')
   }
-  fecharModal(); fetchColaboradores()
+  
+  fecharModal()
+  isLoading.value = true
+  await fetchColaboradores()
+  isLoading.value = false
 }
 
-// --- AÇÕES DO ADM ---
 const aprovarSolicitacao = async (sol: any) => {
   try {
-    console.log('Tentando aprovar solicitação ID:', sol.id);
-    console.log('Colaborador alvo ID:', sol.colaborador_id);
-
-    // 1. Remove campos protegidos para evitar erro de escrita no PostgreSQL
     const { id, created_at, updated_at, ...dadosParaAtualizar } = sol.dados_novos;
-
-    // 2. Atualiza os dados do COLABORADOR
-    const { error: errorColab } = await supabase
-      .from('colaboradores')
-      .update(dadosParaAtualizar)
-      .eq('id', sol.colaborador_id);
-
+    const { error: errorColab } = await supabase.from('colaboradores').update(dadosParaAtualizar).eq('id', sol.colaborador_id);
     if (errorColab) throw errorColab;
 
-    // 3. Atualiza o status da SOLICITAÇÃO e pede o retorno (.select)
-    const { data: solAtualizada, error: errorSol } = await supabase
-      .from('solicitacoes')
-      .update({ status: 'Aprovada' })
-      .eq('id', sol.id)
-      .select();
-
+    const { data: solAtualizada, error: errorSol } = await supabase.from('solicitacoes').update({ status: 'Aprovada' }).eq('id', sol.id).select();
     if (errorSol) throw errorSol;
-
-    // 4. Verificação de segurança: Se o array voltar vazio, o RLS bloqueou silenciosamente
-    if (!solAtualizada || solAtualizada.length === 0) {
-      throw new Error('RLS (Políticas) bloqueou o UPDATE na tabela solicitacoes. A linha existe, mas você não tem permissão para editá-la.');
-    }
+    if (!solAtualizada || solAtualizada.length === 0) throw new Error('RLS (Políticas) bloqueou o UPDATE na tabela solicitacoes.');
 
     mostrarFeedback('Solicitação aprovada com sucesso!', 'sucesso');
     
-    // 5. ATUALIZAÇÃO DA UI
-    await fetchSolicitacoes(); 
-    await fetchColaboradores();
-    
+    isLoading.value = true
+    await fetchSolicitacoes()
+    await fetchColaboradores()
+    isLoading.value = false
   } catch (err) {
     console.error('Erro detalhado na aprovação:', err);
     mostrarFeedback('Erro ao gravar no banco. Verifique o console.', 'erro');
   }
 };
 
-
 const rejeitarSolicitacao = async (id: string) => {
   try {
-    console.log('Tentando rejeitar solicitação ID:', id);
-
-    // Atualiza e já pede o retorno dos dados afetados
-    const { data: solRejeitada, error } = await supabase
-      .from('solicitacoes')
-      .update({ status: 'Rejeitada' })
-      .eq('id', id)
-      .select();
-
+    const { data: solRejeitada, error } = await supabase.from('solicitacoes').update({ status: 'Rejeitada' }).eq('id', id).select();
     if (error) throw error;
-
-    // Se o banco não devolver a linha alterada, falhou silenciosamente pelo RLS
-    if (!solRejeitada || solRejeitada.length === 0) {
-       throw new Error('RLS (Políticas) bloqueou a rejeição na tabela solicitacoes.');
-    }
+    if (!solRejeitada || solRejeitada.length === 0) throw new Error('RLS bloqueou a rejeição.');
 
     mostrarFeedback('Solicitação rejeitada.', 'sucesso');
-    await fetchSolicitacoes(); 
-
+    
+    isLoading.value = true
+    await fetchSolicitacoes()
+    isLoading.value = false
   } catch (err) {
     console.error('Erro ao rejeitar:', err);
     mostrarFeedback('Falha ao atualizar solicitação. Verifique o console.', 'erro');
@@ -721,14 +690,13 @@ const rejeitarSolicitacao = async (id: string) => {
 const desligarColaborador = async (colab: any) => {
   const motivo = prompt('Motivo do desligamento:')
   if (!motivo) return
+  
+  isLoading.value = true
   await supabase.from('colaboradores').update({ status: 'Desligado' }).eq('id', colab.id)
-  await supabase.from('linha_do_tempo').insert([{
-    colaborador_id: colab.id,
-    tipo_evento: 'Desligamento',
-    descricao: motivo,
-    data_evento: new Date().toISOString()
-  }])
-  fetchColaboradores()
+  await supabase.from('linha_do_tempo').insert([{ colaborador_id: colab.id, tipo_evento: 'Desligamento', descricao: motivo, data_evento: new Date().toISOString() }])
+  
+  await fetchColaboradores()
+  isLoading.value = false
 }
 
 // --- UTILITÁRIOS / MODAIS ---
@@ -769,7 +737,7 @@ const handleLogout = async () => { await supabase.auth.signOut(); router.push('/
 const formatarData = (d: string) => d ? new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '-'
 const mostrarFeedback = (m: string, t: string) => { feedback.value = { mensagem: m, tipo: t }; setTimeout(() => feedback.value = { mensagem: '', tipo: '' }, 3000) }
 
-// MÁSCARAS E ARQUIVOS
+// --- MÁSCARAS E ARQUIVOS ---
 const aplicarMascaraCPF = (e: any) => {
   let v = e.target.value.replace(/\D/g, '')
   if (v.length > 11) v = v.slice(0, 11)
@@ -816,7 +784,7 @@ const visualizarDocumento = async (path: string) => {
   if (data?.signedUrl) window.open(data.signedUrl, '_blank')
 }
 
-// EXPORTAÇÃO
+// --- EXPORTAÇÃO ---
 const exportarCSV = () => {
   const SEPARADOR = ';'
   const cabecalho = ['Nome', 'CPF', 'Email', 'Cargo', 'Depto', 'Status', 'Admissao']
@@ -831,14 +799,7 @@ const exportarCSV = () => {
 
 const imprimirDossie = (c: any) => {
   const win = window.open('', '_blank')
-
-  const formatarDataSegura = (data: string) => {
-    try {
-      return typeof formatarData === 'function' ? formatarData(data) : data
-    } catch (e) {
-      return data
-    }
-  }
+  const formatarDataSegura = (data: string) => { try { return typeof formatarData === 'function' ? formatarData(data) : data } catch (e) { return data } }
 
   win?.document.write(`
     <html>
@@ -910,7 +871,6 @@ const imprimirDossie = (c: any) => {
     </body>
     </html>
   `)
-
   win?.document.close()
 }
 </script>
@@ -1069,12 +1029,16 @@ const imprimirDossie = (c: any) => {
 .h-5 { height: 1.25rem; }
 .h-6 { height: 1.5rem; }
 .h-8 { height: 2rem; }
+.h-10 { height: 2.5rem; }
 .w-12 { width: 3rem; }
 .w-16 { width: 4rem; }
 .w-20 { width: 5rem; }
 .w-24 { width: 6rem; }
 .w-32 { width: 8rem; }
+.w-40 { width: 10rem; }
 .w-48 { width: 12rem; }
+.w-64 { width: 16rem; }
+.w-full { width: 100%; }
 .rounded { border-radius: 4px; }
 .rounded-full { border-radius: 9999px; }
 .ml-auto { margin-left: auto; }
