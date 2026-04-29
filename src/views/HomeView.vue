@@ -142,7 +142,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="i in 5" :key="i">
+              <!-- Alterado de 5 para 10 aqui na linha abaixo -->
+              <tr v-for="i in 10" :key="i">
                 <td><div class="skeleton-item rounded" style="width: 150px; height: 20px;"></div></td>
                 <td><div class="skeleton-item rounded" style="width: 120px; height: 20px;"></div></td>
                 <td><div class="skeleton-item rounded" style="width: 130px; height: 20px;"></div></td>
@@ -210,20 +211,24 @@
               Página {{ paginaAtual }} de {{ totalPaginas }}
             </span>
             <div class="pagination-buttons">
-              <button 
-                class="btn-pagination" 
-                :disabled="paginaAtual === 1" 
-                @click="mudarPagina(paginaAtual - 1)"
-              >
-                Anterior
-              </button>
-              <button 
-                class="btn-pagination" 
-                :disabled="paginaAtual >= totalPaginas" 
-                @click="mudarPagina(paginaAtual + 1)"
-              >
-                Próxima
-              </button>
+              <div class="pagination-buttons">
+                <button 
+                  type="button"
+                  class="btn-pagination" 
+                  :disabled="paginaAtual === 1" 
+                  @click.prevent="paginaAnterior"
+                >
+                  Anterior
+                </button>
+                <button 
+                  type="button"
+                  class="btn-pagination" 
+                  :disabled="paginaAtual >= totalPaginas" 
+                  @click.prevent="proximaPagina"
+                >
+                  Próxima
+                </button>
+              </div>
             </div>
           </div>
           <div v-if="colaboradoresFiltrados.length === 0" class="empty-state-simple">
@@ -453,7 +458,7 @@ const solicitacoesPendentes = ref<any[]>([])
 const isLoading = ref(true) 
 const totalColaboradores = ref(0)
 const paginaAtual = ref(1)
-const itensPorPagina = 10 
+const itensPorPagina = 10
 
 const timelineColab = ref<any[]>([])
 const documentosColab = ref<any[]>([])
@@ -520,13 +525,15 @@ async function fetchEmpresas() {
 
 const fetchColaboradores = async () => {
   if (!tenantStore.selectedEmpresaId) return;
-  const de = (paginaAtual.value - 1) * itensPorPagina
-  const ate = de + itensPorPagina - 1
+  
+  // Correção: (1 - 1) * 10 = 0 (Página 1 começa no índice 0)
+  const from = (paginaAtual.value - 1) * itensPorPagina;
+  const to = from + itensPorPagina - 1;
 
   const { data, error, count } = await supabase
     .from('colaboradores')
     .select('*', { count: 'exact' })
-    .range(de, ate)
+    .range(from, to)
     .eq('empresa_id', tenantStore.selectedEmpresaId)
     .order('nome_completo', { ascending: true })
     
@@ -537,6 +544,22 @@ const fetchColaboradores = async () => {
   colaboradores.value = data || []
   totalColaboradores.value = count || 0
 }
+
+const proximaPagina = () => {
+  // Adicionei uma trava de segurança extra aqui
+  if (paginaAtual.value < totalPaginas.value) {
+    paginaAtual.value++;
+    fetchColaboradores();
+  }
+};
+
+const paginaAnterior = () => {
+  // A página mínima no seu sistema é 1, não 0
+  if (paginaAtual.value > 1) { 
+    paginaAtual.value--;
+    fetchColaboradores();
+  }
+};
 
 const fetchSolicitacoes = async () => {
   const { data, error } = await supabase.from('solicitacoes').select('*').eq('status', 'Pendente');
@@ -570,15 +593,6 @@ onMounted(async () => {
   
   setTimeout(() => { isLoading.value = false }, 400)
 })
-
-const mudarPagina = async (novaPagina: number) => {
-  if (novaPagina >= 1 && novaPagina <= totalPaginas.value) {
-    isLoading.value = true
-    paginaAtual.value = novaPagina
-    await fetchColaboradores()
-    setTimeout(() => { isLoading.value = false }, 300)
-  }
-}
 
 const handleSalvarColaborador = async () => {
   erros.value = {}
