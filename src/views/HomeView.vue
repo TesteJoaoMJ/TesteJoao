@@ -1,98 +1,5 @@
 <template>
   <div class="app-container header">
-    <header class="navbar">
-      <LoadingView :isVisible="isFirstLoad" title="Bem Vindo!" message="Preparando seu ambiente, aguarde um momento..." />
-      <LoadingView :isVisible="isLoggingOut" title="Até Logo" message="Encerrando a sessão de forma segura..." />
-
-      <div class="navbar-left">
-        <div class="seletor-grupo">
-          <label class="seletor-label">Selecione a empresa</label>
-          <div v-if="isLoading" class="skeleton-item rounded" style="width: 200px; height: 35px;"></div>
-          <select 
-            v-else
-            v-model="tenantStore.selectedEmpresaId" 
-            class="navbar-select"
-            :disabled="isLoading"
-            @change="fetchColaboradores"
-          >
-            <option disabled value="">Selecione uma empresa</option>
-            <option v-for="empresa in empresas" :key="empresa.id" :value="empresa.id">
-              {{ empresa.nome }}
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <div class="navbar-right">
-
-      <template v-if="userRole === 'admin' && !isLoading">
-        <div class="action-bar" style="display: flex; align-items: center;"> 
-          
-          <button 
-            class="btn-white" 
-            @click="lidarComAcoesRapidas('novo_usuario')"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; color: var(--primary);">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <line x1="19" y1="8" x2="19" y2="14"></line>
-              <line x1="22" y1="11" x2="16" y2="11"></line>
-            </svg>
-            Novo Usuário
-          </button>
-              
-          <button 
-            class="btn-white" 
-            @click="lidarComAcoesRapidas('novo_setor')"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; color: var(--success);">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="12" y1="8" x2="12" y2="16"></line>
-              <line x1="8" y1="12" x2="16" y2="12"></line>
-            </svg>
-            Novo Setor
-          </button>
-              
-        </div>
-      </template>
-
-      <div class="nav-divider"></div>
-        
-        <template v-if="isLoading">
-          <div class="skeleton-item rounded" style="width: 140px; height: 20px;"></div>
-          <div class="skeleton-item rounded-full" style="width: 60px; height: 24px;"></div>
-        </template>
-        <template v-else>
-          <div class="user-info" style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2;">
-            <span v-if="userRole" class="badge" :class="userRole === 'admin' ? 'ativo' : 'user'" style="font-size: 0.7rem; margin-top: 2px;">
-              {{ userRole.toUpperCase() }}
-            </span>
-            <span class="user-email" style="font-size: 0.9rem; font-weight: 500;">{{ usuarioAtual?.email || 'Carregando...' }}</span>
-          </div>
-        </template>
-        
-        <button @click="toggleTheme" class="btn-white btn-icon" :data-tooltip="theme === 'light' ? 'Mudar para Modo Escuro' : 'Mudar para Modo Claro'">
-          <span v-if="theme === 'light'">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-            </svg>
-          </span>
-          <span v-else>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="yellow" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path>
-            </svg>
-          </span>
-        </button>
-
-        <button class="btn-outline danger" @click="handleLogout" data-tooltip="Sair do Sistema">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px; vertical-align: middle;">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-          </svg>
-          Sair
-        </button>
-      </div>
-    </header>
-
     <main class="main-content">
       <div class="page-header">
         <div>
@@ -494,18 +401,14 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '../lib/supabase'
-import { useTheme } from '../composables/useDarkMode'
 import { useTenantStore } from '@/stores/tenant'
-import LoadingView from '../composables/LoadingView.vue';
 import { PDFDocument } from 'pdf-lib'
 
 const isFirstLoad = ref(true)
 const isLoading = ref(false)
 const isLoggingOut = ref(false)
 
-const empresas = ref<{ id: string, nome: string }[]>([])
 const tenantStore = useTenantStore()
-const { theme, toggleTheme } = useTheme()
 const router = useRouter()
 const userRole = ref<string>('user')
 const usuarioAtual = ref<any>(null)
@@ -546,31 +449,6 @@ const filePreview = ref<string | null>(null)
 const filePreviewType = ref<string>('')
 const fileInput = ref<HTMLInputElement | null>(null)
 const tipoDocumento = ref<string>('')
-
-const isModalNovoUsuarioOpen = ref(false)
-const isCadastrandoUsuario = ref(false)
-
-const novoUsuarioForm = ref({ 
-  email: '', 
-  password: '', 
-  confirmPassword: '', 
-  role: 'user',
-  ip: '',
-  localizacao: '',
-  dispositivo: ''
-})
-
-const errosAuth = ref({ 
-  email: '', 
-  password: '', 
-  confirmPassword: '' 
-})
-
-const isModalNovoSetorOpen = ref(false)
-const isCadastrandoSetor = ref(false)
-const novoSetorNome = ref('')
-const erroSetor = ref('')
-  
 const departamentosUnicos = computed(() => [...new Set(colaboradores.value.map(c => c.departamento))])
 
 const colaboradoresFiltrados = computed(() => {
@@ -593,29 +471,7 @@ const timelineFiltrada = computed(() => {
 
 const totalPaginas = computed(() => Math.ceil(totalColaboradores.value / itensPorPagina))
 
-// --- FUNÇÕES DE AÇÕES RÁPIDAS DO ADMIN ---
-const lidarComAcoesRapidas = (acao: string) => {
-  if (acao === 'novo_usuario') {
-      router.push('/usuarios')
-  } else if (acao === 'novo_setor') {
-    router.push('/setores')
-  }
-}
-
 // --- FIM FUNÇÕES NOVAS ---
-
-async function fetchEmpresas() {
-  const { data, error } = await supabase.from('empresas').select('id, nome').order('nome')
-  if (error) {
-    console.error('Erro ao carregar empresas:', error)
-    return
-  }
-  empresas.value = data || []
-  if (!tenantStore.selectedEmpresaId && empresas.value.length > 0) {
-    tenantStore.selectedEmpresaId = empresas.value[0]?.id || ''
-  }
-}
-
 const fetchColaboradores = async () => {
   if (!tenantStore.selectedEmpresaId) return;
     
@@ -686,7 +542,6 @@ onMounted(async () => {
   const { data: perfil } = await supabase.from('perfis').select('role').eq('id', session.user.id).single()
   userRole.value = perfil?.role || 'user'
   
-  await fetchEmpresas()
   await fetchColaboradores()
   
   if (userRole.value === 'admin') {
