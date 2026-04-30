@@ -24,28 +24,27 @@
       </div>
 
       <div class="navbar-right">
-        
+
       <template v-if="userRole === 'admin' && !isLoading">
         <!-- Container opcional para agrupar e estilizar os botões -->
         <div class="acoes-rapidas-botoes"> 
-          
-          <button 
-            class="btn-acao" 
-            @click="lidarComAcoesRapidas('novo_usuario')"
-          >
-            Novo Usuário (Acesso)
-          </button>
-          
-          <button 
-            class="btn-acao" 
-            @click="lidarComAcoesRapidas('novo_setor')"
-          >
-            Cadastrar Novo Setor
-          </button>
-          
+            
+        <button 
+          class="btn-acao" 
+          @click="lidarComAcoesRapidas('novo_usuario')"
+        >
+          Novo Usuário (Acesso)
+        </button>
+            
+        <button 
+          class="btn-acao" 
+          @click="lidarComAcoesRapidas('novo_setor')"
+        >
+          Cadastrar Novo Setor
+        </button>
+            
         </div>
       </template>
-
         <div class="nav-divider"></div>
         
         <template v-if="isLoading">
@@ -248,27 +247,6 @@
       <button class="btn-close" @click="IrparaAuditoria">Ir para auditoria</button>
       <button class="btn-close" @click="IrparaDashBoard">Ir para DashBoard</button>
     </main>
-
-    <Transition name="fade">
-      <div v-if="isModalNovoSetorOpen" class="modal-backdrop" @click.self="fecharModalNovoSetor">
-        <div class="modal-card small-modal">
-          <header class="modal-header">
-            <h3>🏢 Novo Setor / Empresa</h3>
-            <button class="btn-close" @click="fecharModalNovoSetor">✕</button>
-          </header>
-          <div class="form-body">
-            <div class="input-field">
-              <label>Nome da Unidade</label>
-              <input type="text" v-model="novoSetorNome" placeholder="Ex: Matriz Tietê" :class="{ error: erroSetor }" />
-            </div>
-            <footer class="modal-footer">
-              <button type="button" class="btn-white" @click="fecharModalNovoSetor">Cancelar</button>
-              <button type="button" class="btn-white success" @click="cadastrarNovoSetor" :disabled="isCadastrandoSetor">Salvar</button>
-            </footer>
-          </div>
-        </div>
-      </div>
-    </Transition>
 
     <div v-if="isModalOpen" class="modal-backdrop" @click.self="fecharModal">
       <div class="modal-card">
@@ -558,6 +536,25 @@ const filePreviewType = ref<string>('')
 const fileInput = ref<HTMLInputElement | null>(null)
 const tipoDocumento = ref<string>('')
 
+const isModalNovoUsuarioOpen = ref(false)
+const isCadastrandoUsuario = ref(false)
+
+const novoUsuarioForm = ref({ 
+  email: '', 
+  password: '', 
+  confirmPassword: '', 
+  role: 'user',
+  ip: '',
+  localizacao: '',
+  dispositivo: ''
+})
+
+const errosAuth = ref({ 
+  email: '', 
+  password: '', 
+  confirmPassword: '' 
+})
+
 const isModalNovoSetorOpen = ref(false)
 const isCadastrandoSetor = ref(false)
 const novoSetorNome = ref('')
@@ -586,34 +583,12 @@ const timelineFiltrada = computed(() => {
 const totalPaginas = computed(() => Math.ceil(totalColaboradores.value / itensPorPagina))
 
 // --- FUNÇÕES DE AÇÕES RÁPIDAS DO ADMIN ---
-
-// --- FUNÇÕES DE AÇÕES RÁPIDAS DO ADMIN ---
 const lidarComAcoesRapidas = (acao: string) => {
   if (acao === 'novo_usuario') {
-    router.push('/usuarios')
+      router.push('/usuarios')
   } else if (acao === 'novo_setor') {
-    abrirModalNovoSetor()
+    router.push('/setores')
   }
-}
-
-// Lógica Novo Setor / Empresa
-const abrirModalNovoSetor = () => {
-  novoSetorNome.value = ''
-  erroSetor.value = ''
-  isModalNovoSetorOpen.value = true
-}
-
-const fecharModalNovoSetor = () => {
-  isModalNovoSetorOpen.value = false
-}
-
-const cadastrarNovoSetor = async () => {
-  if (!novoSetorNome.value) return erroSetor.value = "Campo obrigatório"
-  isCadastrandoSetor.value = true
-  const { error } = await supabase.from('empresas').insert([{ nome: novoSetorNome.value }])
-  isCadastrandoSetor.value = false
-  if (error) mostrarFeedback(error, 'erro')
-  else { mostrarFeedback("Setor criado!", 'sucesso'); fetchEmpresas(); fecharModalNovoSetor() }
 }
 
 // --- FIM FUNÇÕES NOVAS ---

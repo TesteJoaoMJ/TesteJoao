@@ -4,6 +4,7 @@ import LoginView from '../views/LoginView.vue'
 import AuditoriaView from '../views/AuditoriaView.vue'
 import DasboardView from '../views/dashboardView.vue'
 import UsuariosView from '../views/UsuariosView.vue'
+import SetoresView from '../views/SetoresView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,7 +33,12 @@ const router = createRouter({
       path: '/usuarios',
       name: 'usuarios',
       component: UsuariosView,
-    }
+    },
+    {
+      path: '/setores',
+      name: 'setores',
+      component: SetoresView,
+    },
   ],
 })
 

@@ -64,16 +64,38 @@ const cadastrarUsuario = async () => {
 
   isSalvando.value = true
 
-  // 3. Cadastra no Supabase Auth
-  const { data, error } = await supabase.auth.signUp({
+  
+  const infoDispositivo = navigator.userAgent
+  let ipUsuario = 'Desconhecido'
+  let localUsuario = 'Desconhecido'
+
+  try {
+    const respostaLocal = await fetch('https://ipinfo.io/json')
+    const dadosLocal = await respostaLocal.json()
+      
+    if (dadosLocal.ip) {
+      ipUsuario = dadosLocal.ip
+      localUsuario = `${dadosLocal.city}, ${dadosLocal.region} - ${dadosLocal.country}`
+    }
+  } catch (e) {
+    console.warn('Falha ao buscar localização: ', e)
+  }
+
+
+  // 2. O cadastro só deve prosseguir após o bloco acima
+  const { error } = await supabase.auth.signUp({
     email: novoUsuarioForm.value.email,
     password: novoUsuarioForm.value.password,
-    options: {
-      data: {
-        role: novoUsuarioForm.value.role
-      }
+    options: { 
+      data: { 
+        role: novoUsuarioForm.value.role,
+        ip: ipUsuario,
+        localizacao: localUsuario,
+        dispositivo: infoDispositivo
+      } 
     }
-  })
+  });
+
 
   if (error) {
     errosAuth.value.geral = error.message
@@ -251,8 +273,15 @@ onMounted(fetchUsuarios)
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 1.5rem;
+  align-items: end; /* Alinha o botão com o input */
+}
+
+@media (min-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr auto; /* Input ocupa o espaço restante, botão ocupa o necessário */
+  }
 }
 
 .input-group {
@@ -267,8 +296,7 @@ onMounted(fetchUsuarios)
   color: #475569;
 }
 
-.input-group input,
-.input-group select {
+.input-group input {
   padding: 0.75rem;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -278,17 +306,13 @@ onMounted(fetchUsuarios)
   transition: border-color 0.2s;
 }
 
-.input-group input:focus,
-.input-group select:focus {
+.input-group input:focus {
   border-color: #3b82f6;
   background: #ffffff;
 }
 
 .form-actions {
-  grid-column: 1 / -1; /* Ocupa a linha toda */
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 1rem;
+  margin-top: 0;
 }
 
 .btn-salvar {
@@ -301,6 +325,7 @@ onMounted(fetchUsuarios)
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s;
+  height: 46px; /* Altura igual ao input */
 }
 
 .btn-salvar:hover:not(:disabled) {
@@ -334,7 +359,8 @@ onMounted(fetchUsuarios)
 }
 
 .table-wrapper {
-  padding: 0; /* Tira o padding do card para a tabela colar nas bordas */
+  padding: 0;
+  overflow-x: auto;
 }
 
 .audit-table {
@@ -361,32 +387,48 @@ td {
   background-color: var(--bg-surface-hover, #f8fafc);
 }
 
-.email-cell {
-  font-weight: 500;
-  color: var(--text-main, #0f172a);
+.nome-cell {
+  color: var(--primary-color, #2563eb);
 }
 
-.badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
+.id-cell {
+  font-family: monospace;
+  color: #94a3b8;
 }
 
-.badge-admin {
-  background-color: #065f46;
-  color: white;
+.loading-state {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
 }
 
-.badge-user {
-  background-color: #991b1b;
-  color: white;
-}
-
-@media (max-width: 768px) {
-  .form-grid {
-    grid-template-columns: 1fr;
+/* Tema Escuro (Aproveitando a responsividade de cor solicitada antes) */
+@media (prefers-color-scheme: dark) {
+  .gerenciamento-container {
+    --bg-app: #0f172a;
+    --text-main: #f8fafc;
+    --primary-color: #60a5fa;
+  }
+  .card {
+    --bg-card: #1e293b;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  }
+  .input-group label, th {
+    color: #94a3b8;
+  }
+  .input-group input {
+    background: #0f172a;
+    border-color: #334155;
+    color: white;
+  }
+  th, td {
+    --border: #334155;
+  }
+  th {
+    --table-header-bg: #0f172a;
+  }
+  .table-row:hover {
+    --bg-surface-hover: #334155;
   }
 }
 </style>
