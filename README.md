@@ -22,21 +22,16 @@ flowchart TD
     A[Frontend: Tela de Cadastro] --> B(Preenche Formulário)
     B --> C{Validação Front}
     
-    C -- "Erro (Falta campo / Senha não bate)" --> D[Frontend: Toast de Erro]
-    C -- "Tudo OK" --> E[Coleta IP, Localização e Navegador]
-    
-    E --> F[Supabase Auth: auth.signUp\nEnvia metadata: ip, localizacao, dispositivo]
-    
-    F -- "Retorna Erro (ex: E-mail em uso)" --> D
-    F -- "Retorna Sucesso" --> L[Frontend: Toast de Sucesso e fecha modal]
+    C -- "Falta campo" --> D[Frontend: Toast de Erro]
+    C -- "Dados Válidos" --> E[Supabase Auth: auth.signUp]
     
     subgraph Banco de Dados PostgreSQL
-        F -. "Criação Automática" .-> G[(auth.users)]
-        G -- "Dispara Trigger" --> H{"handle_new_user()"}
-        H --> I[INSERT em public.perfis\nCopia role e metadados]
-        I -- "Dispara Trigger" --> J{"gerar_fingerprint_perfil()"}
-        J --> K[Criptografa dados em SHA256\ne salva o fingerprint_hash]
+        E --> F[Inserção em auth.users]
+        F -- "Dispara Trigger Automática" --> G{handle_new_user()}
+        G --> H[INSERT em public.perfis\nrole default: 'user']
     end
+    
+    H --> I[Frontend: Toast de Sucesso]
 ```
 ### 2. Cadastro de Colaboradores (`public.colaboradores`)
 * **De onde surge:** Formulário principal de cadastro ou edição de funcionários no frontend.
