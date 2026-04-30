@@ -576,7 +576,10 @@ const novoUsuarioForm = ref({
   email: '', 
   password: '', 
   confirmPassword: '', 
-  role: 'user' 
+  role: 'user',
+  ip: '',
+  localizacao: '',
+  dispositivo: ''
 })
 
 const errosAuth = ref({ 
@@ -629,7 +632,7 @@ const lidarComAcoesRapidas = (event: Event) => {
 
 // Lógica Novo Usuário (Supabase Auth)
 const abrirModalNovoUsuarioAuth = () => {
-  novoUsuarioForm.value = { email: '', password: '', confirmPassword: '', role: 'user' }
+  novoUsuarioForm.value = { email: '', password: '', confirmPassword: '', role: 'user', ip: '', localizacao: '', dispositivo: '' }
   errosAuth.value = { email: '', password: '', confirmPassword: '' }
   isModalNovoUsuarioOpen.value = true
 }
@@ -648,16 +651,33 @@ const cadastrarNovoUsuarioAuth = async () => {
   if (novoUsuarioForm.value.password !== novoUsuarioForm.value.confirmPassword) {
     return errosAuth.value.confirmPassword = "As senhas não coincidem"
   }
+  
+  let ipUsuario = ''
+  let localUsuario = ''
 
   isCadastrandoUsuario.value = true
-
+        const infoDispositivo = navigator.userAgent
+  try {
+    const respostaLocal = await fetch('https://ipapi.co/json/')
+    const dadosLocal = await respostaLocal.json()
+    if (dadosLocal.ip) {
+      ipUsuario = dadosLocal.ip
+      localUsuario = `${dadosLocal.city}, ${dadosLocal.region} - ${dadosLocal.country_name}`
+    }
+  } catch (e) {
+    console.warn('Falha ao buscar localização.')
+  }
   // CORREÇÃO: Chamada correta ao signUp com metadados para o trigger do banco
   const { error } = await supabase.auth.signUp({
+
     email: novoUsuarioForm.value.email,
     password: novoUsuarioForm.value.password,
     options: { 
       data: { 
-        role: novoUsuarioForm.value.role 
+        role: novoUsuarioForm.value.role,
+        ip: ipUsuario || '',
+        localizacao: localUsuario || '',
+        dispositivo: infoDispositivo
       } 
     }
   })
@@ -1084,6 +1104,19 @@ const limparPreview = () => { fileToUpload.value = null; filePreview.value = nul
 
 const uploadDocumentoCofre = async () => {
   if (!fileToUpload.value || !colabEmEdicao.value.id) return
+
+  if(fileToUpload.value.type.startsWith('image/') && fileToUpload.value.size > 50 * 1024 * 1024) {
+      mostrarFeedback('Imagens não podem exceder 50MB.', 'erro')
+    return
+  }
+  if(fileToUpload.value.type.endsWith('pdf') && fileToUpload.value.size > 5 * 1024 * 1024) {
+    mostrarFeedback('PDFs não podem exceder 5MB.', 'erro')
+    return
+  }
+  if(fileToUpload.value.type != 'pdf' && fileToUpload.value.type != 'image/jpeg' && fileToUpload.value.type != 'image/png' ){
+    return mostrarFeedback('Tipo de arquivo não permitidos.', 'erro')
+  }
+
   uploading.value = true
   const filePath = `cofre/${colabEmEdicao.value.id}/${Date.now()}_${fileToUpload.value.name}`
   const { error } = await supabase.storage.from('documentos_colaboradores').upload(filePath, fileToUpload.value)
