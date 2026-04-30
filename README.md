@@ -27,7 +27,7 @@ flowchart TD
     
     subgraph Banco de Dados PostgreSQL
         E --> F[Inserção em auth.users]
-        F -- "Dispara Trigger Automática" --> G{handle_new_user()}
+        F -- "Dispara Trigger Automática" --> G{"handle_new_user()"}
         G --> H[INSERT em public.perfis\nrole default: 'user']
     end
     
