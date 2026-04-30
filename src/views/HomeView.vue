@@ -364,7 +364,24 @@
                 <div class="section-header">
                   <h4 class="section-title">Cofre de Documentos</h4>
                   <p class="section-subtitle">Anexe contratos, atestados e documentos.</p>
-                </div> 
+                </div>
+                
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Qual tipo de documento pertence?</label>
+                </div>
+                <select v-model="tipoDocumento" class="input-select">
+                    <option value="" disabled selected >Selecione uma categoria...</option>
+                    <optgroup label="Documentação Pessoal">
+                      <option value="RG / CNH / Passaporte">RG / CNH / Passaporte</option>
+                      <option value="Cartão de CPF">Cartão de CPF</option>
+                      <option value="Comprovante de Residência">Comprovante de Residência</option>
+                    </optgroup>
+                    <optgroup label="Contratos e RH">
+                      <option value="Contrato de Trabalho">Contrato de Trabalho</option>
+                      <option value="Atestado de Saúde Ocupacional (ASO)">Atestado de Saúde Ocupacional (ASO)</option>
+                    </optgroup>
+                  </select>
+                
               <div class="file-upload-wrapper">
                 <label for="file-upload" class="file-upload-dropzone" :class="{ 'has-file': filePreview }">
                   <input id="file-upload" type="file" @change="prepararUpload" accept=".pdf,.jpg,.jpeg,.png,.webp" ref="fileInput" class="hidden-input" />
@@ -568,6 +585,7 @@ const fileToUpload = ref<File | null>(null)
 const filePreview = ref<string | null>(null)
 const filePreviewType = ref<string>('')
 const fileInput = ref<HTMLInputElement | null>(null)
+const tipoDocumento = ref<string>('')
 
 const isModalNovoUsuarioOpen = ref(false)
 const isCadastrandoUsuario = ref(false)
@@ -1104,33 +1122,125 @@ const prepararUpload = (event: Event) => {
 
 const limparPreview = () => { fileToUpload.value = null; filePreview.value = null; if (fileInput.value) fileInput.value.value = '' }
 
+// Função auxiliar para comprimir imagens no Frontend
+const comprimirImagemNoNavegador = (file: File): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = (event) => {
+      const img = new Image()
+      img.src = event.target?.result as string
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        
+        // Define o limite máximo de resolução (Ex: 1920x1080)
+        const MAX_WIDTH = 1920
+        const MAX_HEIGHT = 1080
+        let width = img.width
+        let height = img.height
+
+        // Mantém a proporção da imagem se ela for maior que o limite
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width
+            width = MAX_WIDTH
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height
+            height = MAX_HEIGHT
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        ctx?.drawImage(img, 0, 0, width, height)
+
+        // Converte para WEBP com 70% de qualidade (gera arquivos muito menores)
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const novoNome = file.name.replace(/\.[^/.]+$/, "") + ".webp"
+            const arquivoCompactado = new File([blob], novoNome, {
+              type: 'image/webp',
+              lastModified: Date.now(),
+            })
+            resolve(arquivoCompactado)
+          } else {
+            reject(new Error("Erro ao gerar a imagem compactada"))
+          }
+        }, 'image/webp', 0.7) 
+      }
+    }
+    reader.onerror = (error) => reject(error)
+  })
+}
+
 const uploadDocumentoCofre = async () => {
   if (!fileToUpload.value || !colabEmEdicao.value.id) return
 
-  if(fileToUpload.value.type.startsWith('image/') && fileToUpload.value.size > 50 * 1024 * 1024) {
-      mostrarFeedback('Imagens não podem exceder 50MB.', 'erro')
-    return
+  if (!tipoDocumento.value) {
+    mostrarFeedback('Por favor, selecione o tipo do documento antes de enviar.', 'alerta');
+    return;
   }
-  if(fileToUpload.value.type.endsWith('pdf') && fileToUpload.value.size > 2 * 1024 * 1024) {
-    mostrarFeedback('PDFs não podem exceder 2MB.', 'erro')
-    return
+
+  // Validação e Compressão de IMAGEM (> 50MB)
+  if (fileToUpload.value.type.startsWith('image/') && fileToUpload.value.size > 50 * 1024 * 1024) {
+    const confirmarCompactacao = confirm('A imagem excedeu o limite de 50MB. Deseja converter e compactar essa imagem agora?')
+    
+    if (!confirmarCompactacao) {
+      mostrarFeedback('Upload cancelado. Imagens não podem exceder 50MB.', 'erro')
+      return // Para a execução se o usuário recusar
+    }
+
+    try {
+      mostrarFeedback('Compactando imagem, por favor aguarde...', 'info')
+      // Chama a função que reduz o tamanho e converte
+      fileToUpload.value = await comprimirImagemNoNavegador(fileToUpload.value)
+      mostrarFeedback('Imagem compactada com sucesso!', 'sucesso')
+    } catch (error) {
+      mostrarFeedback('Falha ao tentar compactar a imagem.', 'erro')
+      return
+    }
   }
-  if (
-    fileToUpload.value.type !== 'application/pdf' && 
-    fileToUpload.value.type !== 'image/jpeg' && 
-    fileToUpload.value.type !== 'image/png' && 
-    fileToUpload.value.type !== 'image/webp'
-  ) {
+
+  // Validação e Compressão de PDF (> 2MB)
+  if (fileToUpload.value.type.endsWith('pdf') && fileToUpload.value.size > 2 * 1024 * 1024) {
+    const confirmarCompactacao = confirm('O PDF excedeu o limite de 2MB. Deseja enviar para compactação?')
+    
+    if (!confirmarCompactacao) {
+      mostrarFeedback('Upload cancelado. PDFs não podem exceder 2MB.', 'erro')
+      return 
+    }
+
+    try {
+      mostrarFeedback('Enviando PDF para compactação...', 'info')
+      
+      mostrarFeedback('Função de compactar PDF precisa de um backend/API!', 'erro')
+      return // Parando aqui pois ainda não há um backend configurado para o PDF
+      
+    } catch (error) {
+      mostrarFeedback('Falha ao tentar compactar o PDF.', 'erro')
+      return
+    }
+  }
+
+  const tiposPermitidos = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+
+  if (!tiposPermitidos.includes(fileToUpload.value.type)) {
     mostrarFeedback('Tipo de arquivo não permitido. Aceitamos apenas PDF, JPG, PNG e WEBP.', 'erro');
     limparPreview();
     return;
   }
 
   uploading.value = true
-  const filePath = `cofre/${colabEmEdicao.value.id}/${Date.now()}_${fileToUpload.value.name}`
+  // Usa o nome limpo no caminho
+  const nomeLimpo = fileToUpload.value.name.replace(/[^a-zA-Z0-9.\-_]/g, '_')
+  const filePath = `cofre/${colabEmEdicao.value.id}/${Date.now()}_${nomeLimpo}`
   const { error } = await supabase.storage.from('documentos_colaboradores').upload(filePath, fileToUpload.value)
   if (!error) {
-    await supabase.from('linha_do_tempo').insert([{ colaborador_id: colabEmEdicao.value.id, tipo_evento: 'Upload de Documento', descricao: `Documento: ${fileToUpload.value.name}`, arquivo_url: filePath, data_evento: new Date().toISOString() }])
+    // Inclui a categoria na descrição para a timeline
+    await supabase.from('linha_do_tempo').insert([{ colaborador_id: colabEmEdicao.value.id, tipo_evento: `${tipoDocumento.value}`, descricao: `${nomeLimpo}`, arquivo_url: filePath, data_evento: new Date().toISOString() }])
     limparPreview(); carregarDocumentos(colabEmEdicao.value.id)
     mostrarFeedback('Arquivo enviado!', 'sucesso')
   } else {
