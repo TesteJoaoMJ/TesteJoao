@@ -538,6 +538,7 @@ import { supabase } from '../lib/supabase'
 import { useTheme } from '../composables/useDarkMode'
 import { useTenantStore } from '@/stores/tenant'
 import LoadingView from '../composables/LoadingView.vue';
+import { PDFDocument } from 'pdf-lib'
 
 const isFirstLoad = ref(true)
 const isLoading = ref(false)
@@ -1122,59 +1123,75 @@ const prepararUpload = (event: Event) => {
 
 const limparPreview = () => { fileToUpload.value = null; filePreview.value = null; if (fileInput.value) fileInput.value.value = '' }
 
+const comprimirPDFNoNavegador = async (file: File): Promise<File> => {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdfDoc = await PDFDocument.load(arrayBuffer);
+  
+  // Salva com compressão de objetos para reduzir o peso
+  const pdfBytes = await pdfDoc.save({ useObjectStreams: true });
+  
+  // CORREÇÃO: Forçamos a conversão para Uint8Array para evitar o erro de ArrayBufferLike
+  const blobPart = new Uint8Array(pdfBytes);
+  
+  return new File([blobPart], file.name, {
+    type: 'application/pdf',
+    lastModified: Date.now(),
+  });
+};
+
 // Função auxiliar para comprimir imagens no Frontend
-const comprimirImagemNoNavegador = (file: File): Promise<File> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = (event) => {
-      const img = new Image()
-      img.src = event.target?.result as string
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        const ctx = canvas.getContext('2d')
-        
-        // Define o limite máximo de resolução (Ex: 1920x1080)
-        const MAX_WIDTH = 1920
-        const MAX_HEIGHT = 1080
-        let width = img.width
-        let height = img.height
+  const comprimirImagemNoNavegador = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = (event) => {
+        const img = new Image()
+        img.src = event.target?.result as string
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          const ctx = canvas.getContext('2d')
+          
+          // Define o limite máximo de resolução (Ex: 1920x1080)
+          const MAX_WIDTH = 1920
+          const MAX_HEIGHT = 1080
+          let width = img.width
+          let height = img.height
 
-        // Mantém a proporção da imagem se ela for maior que o limite
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width
-            width = MAX_WIDTH
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height
-            height = MAX_HEIGHT
-          }
-        }
-
-        canvas.width = width
-        canvas.height = height
-        ctx?.drawImage(img, 0, 0, width, height)
-
-        // Converte para WEBP com 70% de qualidade (gera arquivos muito menores)
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const novoNome = file.name.replace(/\.[^/.]+$/, "") + ".webp"
-            const arquivoCompactado = new File([blob], novoNome, {
-              type: 'image/webp',
-              lastModified: Date.now(),
-            })
-            resolve(arquivoCompactado)
+          // Mantém a proporção da imagem se ela for maior que o limite
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width
+              width = MAX_WIDTH
+            }
           } else {
-            reject(new Error("Erro ao gerar a imagem compactada"))
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height
+              height = MAX_HEIGHT
+            }
           }
-        }, 'image/webp', 0.7) 
+
+          canvas.width = width
+          canvas.height = height
+          ctx?.drawImage(img, 0, 0, width, height)
+
+          // Converte para WEBP com 70% de qualidade (gera arquivos muito menores)
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const novoNome = file.name.replace(/\.[^/.]+$/, "") + ".webp"
+              const arquivoCompactado = new File([blob], novoNome, {
+                type: 'image/webp',
+                lastModified: Date.now(),
+              })
+              resolve(arquivoCompactado)
+            } else {
+              reject(new Error("Erro ao gerar a imagem compactada"))
+            }
+          }, 'image/webp', 0.7) 
+        }
       }
-    }
-    reader.onerror = (error) => reject(error)
-  })
-}
+      reader.onerror = (error) => reject(error)
+    })
+  }
 
 const uploadDocumentoCofre = async () => {
   if (!fileToUpload.value || !colabEmEdicao.value.id) return
@@ -1206,7 +1223,7 @@ const uploadDocumentoCofre = async () => {
 
   // Validação e Compressão de PDF (> 2MB)
   if (fileToUpload.value.type.endsWith('pdf') && fileToUpload.value.size > 2 * 1024 * 1024) {
-    const confirmarCompactacao = confirm('O PDF excedeu o limite de 2MB. Deseja enviar para compactação?')
+    const confirmarCompactacao = confirm('O PDF excedeu o limite de 2MB. Deseja tentar compactar o arquivo?')
     
     if (!confirmarCompactacao) {
       mostrarFeedback('Upload cancelado. PDFs não podem exceder 2MB.', 'erro')
@@ -1214,12 +1231,23 @@ const uploadDocumentoCofre = async () => {
     }
 
     try {
-      mostrarFeedback('Enviando PDF para compactação...', 'info')
+      mostrarFeedback('Compactando PDF, aguarde...', 'info')
       
-      mostrarFeedback('Função de compactar PDF precisa de um backend/API!', 'erro')
-      return // Parando aqui pois ainda não há um backend configurado para o PDF
+      // CHAMADA DA FUNÇÃO DE COMPRESSÃO
+      const pdfCompactado = await comprimirPDFNoNavegador(fileToUpload.value);
+
+      // Verifica se a compressão realmente ajudou
+      if (pdfCompactado.size > 2 * 1024 * 1024) {
+        mostrarFeedback('Não foi possível reduzir o PDF para menos de 2MB.', 'alerta');
+        // Opcional: interromper se ainda estiver grande demais
+        // return 
+      }
+
+      fileToUpload.value = pdfCompactado;
+      mostrarFeedback('PDF processado com sucesso!', 'sucesso')
       
     } catch (error) {
+      console.error(error);
       mostrarFeedback('Falha ao tentar compactar o PDF.', 'erro')
       return
     }
