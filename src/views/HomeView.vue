@@ -3,7 +3,7 @@
     <header class="navbar">
       <LoadingView :isVisible="isFirstLoad" title="Bem Vindo!" message="Preparando seu ambiente, aguarde um momento..." />
       <LoadingView :isVisible="isLoggingOut" title="Até Logo" message="Encerrando a sessão de forma segura..." />
-      
+
       <div class="navbar-left">
         <div class="seletor-grupo">
           <label class="seletor-label">Selecione a empresa</label>
@@ -26,26 +26,37 @@
       <div class="navbar-right">
 
       <template v-if="userRole === 'admin' && !isLoading">
-        <!-- Container opcional para agrupar e estilizar os botões -->
-        <div class="acoes-rapidas-botoes"> 
-            
-        <button 
-          class="btn-acao" 
-          @click="lidarComAcoesRapidas('novo_usuario')"
-        >
-          Novo Usuário (Acesso)
-        </button>
-            
-        <button 
-          class="btn-acao" 
-          @click="lidarComAcoesRapidas('novo_setor')"
-        >
-          Cadastrar Novo Setor
-        </button>
-            
+        <div class="action-bar" style="display: flex; align-items: center;"> 
+          
+          <button 
+            class="btn-white" 
+            @click="lidarComAcoesRapidas('novo_usuario')"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; color: var(--primary);">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <line x1="19" y1="8" x2="19" y2="14"></line>
+              <line x1="22" y1="11" x2="16" y2="11"></line>
+            </svg>
+            Novo Usuário
+          </button>
+              
+          <button 
+            class="btn-white" 
+            @click="lidarComAcoesRapidas('novo_setor')"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; color: var(--success);">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            Novo Setor
+          </button>
+              
         </div>
       </template>
-        <div class="nav-divider"></div>
+
+      <div class="nav-divider"></div>
         
         <template v-if="isLoading">
           <div class="skeleton-item rounded" style="width: 140px; height: 20px;"></div>
@@ -60,7 +71,7 @@
           </div>
         </template>
         
-        <button @click="toggleTheme" class="btn-white btn-icon" :title="theme === 'light' ? 'Mudar para Modo Escuro' : 'Mudar para Modo Claro'">
+        <button @click="toggleTheme" class="btn-white btn-icon" :data-tooltip="theme === 'light' ? 'Mudar para Modo Escuro' : 'Mudar para Modo Claro'">
           <span v-if="theme === 'light'">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
@@ -73,7 +84,7 @@
           </span>
         </button>
 
-        <button class="btn-outline danger" @click="handleLogout" title="Encerrar Sessão">
+        <button class="btn-outline danger" @click="handleLogout" data-tooltip="Sair do Sistema">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px; vertical-align: middle;">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
           </svg>
