@@ -187,14 +187,16 @@ const handleLogin = async () => {
     let localUsuario = 'Desconhecido'
 
     try {
-      const respostaLocal = await fetch('https://ipapi.co/json/')
+      // Trocando para o ipinfo.io, que costuma liberar o localhost sem problemas
+      const respostaLocal = await fetch('https://ipinfo.io/json')
       const dadosLocal = await respostaLocal.json()
+      
       if (dadosLocal.ip) {
         ipUsuario = dadosLocal.ip
-        localUsuario = `${dadosLocal.city}, ${dadosLocal.region} - ${dadosLocal.country_name}`
+        localUsuario = `${dadosLocal.city}, ${dadosLocal.region} - ${dadosLocal.country}`
       }
     } catch (e) {
-      console.warn('Falha ao buscar localização.')
+      console.warn('Falha ao buscar localização: ', e)
     }
 
     try {

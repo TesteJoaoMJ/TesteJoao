@@ -23,7 +23,7 @@ flowchart TD
     B --> C{Validação Front}
     
     C -- "Falta campo" --> D[Frontend: Toast de Erro]
-    C -- "Dados Válidos" --> E[Supabase Auth: auth.signUp]
+    C -- "Valida a localização, IP, navegador do usuario, para verificar se esta batendo o rash do supabase" --> E[Supabase Auth: auth.signUp]
     
     subgraph Banco de Dados PostgreSQL
         E --> F[Inserção em auth.users]

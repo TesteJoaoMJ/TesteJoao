@@ -671,25 +671,24 @@ const cadastrarNovoUsuarioAuth = async () => {
     return errosAuth.value.confirmPassword = "As senhas não coincidem"
   }
 
-  let ipUsuario = ''
-  let localUsuario = ''
-  
   const infoDispositivo = navigator.userAgent
+  let ipUsuario = 'Desconhecido'
+  let localUsuario = 'Desconhecido'
 
   try {
-    const respostaLocal = await fetch('https://ipapi.co/json/')
+    const respostaLocal = await fetch('https://ipinfo.io/json')
     const dadosLocal = await respostaLocal.json()
+      
     if (dadosLocal.ip) {
       ipUsuario = dadosLocal.ip
-      localUsuario = `${dadosLocal.city}, ${dadosLocal.region} - ${dadosLocal.country_name}`
+      localUsuario = `${dadosLocal.city}, ${dadosLocal.region} - ${dadosLocal.country}`
     }
   } catch (e) {
-    console.warn('Falha ao buscar localização.')
+    console.warn('Falha ao buscar localização: ', e)
   }
 
-  isCadastrandoUsuario.value = true
 
-  // CORREÇÃO: Chamada correta ao signUp com metadados para o trigger do banco
+  // 2. O cadastro só deve prosseguir após o bloco acima
   const { error } = await supabase.auth.signUp({
     email: novoUsuarioForm.value.email,
     password: novoUsuarioForm.value.password,
@@ -701,7 +700,7 @@ const cadastrarNovoUsuarioAuth = async () => {
         dispositivo: infoDispositivo
       } 
     }
-  })
+  });
 
   isCadastrandoUsuario.value = false
 
@@ -1201,12 +1200,12 @@ const uploadDocumentoCofre = async () => {
     return;
   }
 
-  // Validação e Compressão de IMAGEM (> 50MB)
-  if (fileToUpload.value.type.startsWith('image/') && fileToUpload.value.size > 50 * 1024 * 1024) {
-    const confirmarCompactacao = confirm('A imagem excedeu o limite de 50MB. Deseja converter e compactar essa imagem agora?')
+  // Validação e Compressão de IMAGEM (> 1MB)
+  if (fileToUpload.value.type.startsWith('image/') && fileToUpload.value.size > 1 * 1024 * 1024) {
+    const confirmarCompactacao = confirm('A imagem excedeu o limite de 1MB. Deseja converter e compactar essa imagem agora?')
     
     if (!confirmarCompactacao) {
-      mostrarFeedback('Upload cancelado. Imagens não podem exceder 50MB.', 'erro')
+      mostrarFeedback('Upload cancelado. Imagens não podem exceder 1MB.', 'erro')
       return // Para a execução se o usuário recusar
     }
 
