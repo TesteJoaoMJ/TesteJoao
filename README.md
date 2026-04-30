@@ -19,10 +19,19 @@ Abaixo está o mapeamento de onde cada informação surge no frontend e como é 
   * `role`: Define o nível de permissão. Valores aceitos: `'adimim'`, `'rh'`, `'user'`. O sistema força o valor inicial como `'user'`.
 ```mermaid
 flowchart TD
-    A[Cadastro no sistema] --> B{Validação de dados}
+    A[Frontend: Tela de Cadastro] --> B(Preenche Formulário)
+    B --> C{Validação Front}
     
-    B -- Tudo OK --> C[(Inserir no Supabase)]
-    B -- Caso não --> D[Mostra erro com toast personalizado no front]
+    C -- "Falta campo" --> D[Frontend: Toast de Erro]
+    C -- "Dados Válidos" --> E[Supabase Auth: auth.signUp]
+    
+    subgraph Banco de Dados PostgreSQL
+        E --> F[Inserção em auth.users]
+        F -- "Dispara Trigger Automática" --> G{handle_new_user()}
+        G --> H[INSERT em public.perfis\nrole default: 'user']
+    end
+    
+    H --> I[Frontend: Toast de Sucesso]
 ```
 ### 2. Cadastro de Colaboradores (`public.colaboradores`)
 * **De onde surge:** Formulário principal de cadastro ou edição de funcionários no frontend.
@@ -33,25 +42,85 @@ flowchart TD
   * `cargo`, `departamento`, `salario` (Tipo numérico 10,2).
   * `status`: Controlado pelo ENUM `status_colaborador` (Aceita apenas `'Ativo'` ou `'Desligado'`).
   * `empresa_id`: Chave estrangeira que define a qual empresa (tenant) o colaborador pertence.
-
+```mermaid
+flowchart TD
+    A[Frontend: Novo Colaborador] --> B{Validação do Formulário}
+    
+    B -- "Campos obrigatórios (*) vazios" --> C[Frontend: Toast de Erro]
+    B -- "Preenchimento OK" --> D[Supabase API: INSERT public.colaboradores]
+    
+    subgraph Banco de Dados PostgreSQL
+        D --> E{Validações de Constraint DB}
+        E -- "CPF ou Email duplicado" --> F[DB: Erro de UNIQUE Constraint]
+        E -- "Dados Válidos" --> G[Salva Registro\nStatus Default: 'Ativo'\nVincula: empresa_id]
+    end
+    
+    F -->|Captura Erro| C
+    G --> H[Frontend: Toast de Sucesso e Atualiza Grid]
+```
 ### 3. Linha do Tempo e Ocorrências (`public.linha_do_tempo`)
 * **De onde surge:** Ações do RH na tela do perfil do colaborador (ex: anexar um atestado, registrar uma promoção, férias ou aviso prévio).
 * **Fluxo:** Ao salvar a ação, o frontend grava o registro apontando para o ID do colaborador afetado.
 * **Campos Principais:**
   * `tipo_evento` e `descricao`: O que aconteceu no evento histórico.
   * `arquivo_url`: Caso o evento tenha um documento (como um PDF de atestado), este campo guarda o caminho de onde o arquivo está salvo no *Cofre* (Supabase Storage).
-
+```mermaid
+flowchart TD
+    A[Frontend: Edição de Colaborador] --> B[Aba: Cofre de Documentos]
+    B --> C(Selecionar arquivo local)
+    C --> D[Clique em 'Confirmar Envio']
+    
+    subgraph Supabase Storage
+        D --> E[Upload para o Bucket\n'documentos_colaboradores']
+        E -->|Sucesso| F(Retorna Caminho/URL do Arquivo)
+    end
+    
+    subgraph Banco de Dados PostgreSQL
+        F --> G[Supabase API: INSERT public.linha_do_tempo]
+        G --> H[Salva: colaborador_id,\ntipo_evento, arquivo_url]
+    end
+    
+    H --> I[Frontend: Toast de Sucesso e Atualiza Cofre na Tela]
+```
 ### 4. Controle de Aprovações (`public.solicitacoes`)
 * **De onde surge:** Quando um usuário comum (sem permissão de 'adimim' ou 'rh') tenta alterar dados de um colaborador.
 * **Fluxo:** Em vez de atualizar a tabela `colaboradores` diretamente, o frontend envia os dados para a tabela `solicitacoes`.
 * **Campos Principais:**
   * `dados_novos`: Salva um objeto `JSONB` com as modificações propostas.
   * `status`: Inicia como `'Pendente'`. Administradores leem esta tabela para aprovar ou rejeitar.
-
-### 5. Auditoria de Acesso (`public.historico_logins`)
+flowchart TD
+    A[Frontend: Usuário Comum Edita Dados] --> B[Gera Payload das Mudanças]
+    B --> C[Supabase API: INSERT public.solicitacoes]
+    
+    subgraph Banco de Dados PostgreSQL
+        C --> D[Salva registro com\nstatus = 'Pendente' e payload JSONB]
+    end
+    
+    D --> E[Frontend: Admin acessa Painel de Aprovações]
+    E --> F{Revisão do Admin}
+    
+    F -- Rejeita --> G[UPDATE solicitacoes\nstatus = 'Rejeitado']
+    F -- Aprova --> H[UPDATE public.colaboradores\ncom extração do JSONB]
+    H --> I[UPDATE solicitacoes\nstatus = 'Aprovada']
+### 5. Auditoria de Acesso
 * **De onde surge:** No momento exato do login no frontend, capturando informações do navegador/dispositivo.
 * **Fluxo:** Ao invés do frontend apenas logar, ele chama uma *Function* no banco que escreve nesta tabela antes de devolver o token.
 * **Campos Principais:** `ip`, `localizacao`, `dispositivo`, `data_login`.
+```mermaid
+flowchart TD
+    A[Frontend: Tela de Login] --> B(Navegador Coleta IP, Localização, Dispositivo)
+    B --> C[Chama Função RPC: verificar_login]
+    
+    subgraph Banco de Dados PostgreSQL
+        C --> D{RPC: Valida Email e Senha criptografada}
+        D -- "Senha ou Email Incorretos" --> E[Retorna NULL]
+        D -- "Autenticado com Sucesso" --> F[INSERT em public.historico_logins\ncom os dados do dispositivo]
+        F --> G[Retorna Dados do Usuário e Token]
+    end
+    
+    E --> H[Frontend: Toast de Erro - Credenciais Inválidas]
+    G --> I[Frontend: Salva Sessão e Redireciona para Dashboard]
+```
 
 ---
 
