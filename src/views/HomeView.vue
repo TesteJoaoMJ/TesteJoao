@@ -367,7 +367,7 @@
                 </div> 
               <div class="file-upload-wrapper">
                 <label for="file-upload" class="file-upload-dropzone" :class="{ 'has-file': filePreview }">
-                  <input id="file-upload" type="file" @change="prepararUpload" accept=".pdf,.jpg,.jpeg,.png" ref="fileInput" class="hidden-input" />
+                  <input id="file-upload" type="file" @change="prepararUpload" accept=".pdf,.jpg,.jpeg,.png,.webp" ref="fileInput" class="hidden-input" />
                   
                   <div v-if="!filePreview" class="dropzone-content">
                     <p class="upload-text">Clique para selecionar um arquivo</p>
@@ -654,16 +654,7 @@ const cadastrarNovoUsuarioAuth = async () => {
 
   let ipUsuario = ''
   let localUsuario = ''
-  try {
-    const respostaLocal = await fetch('https://ipapi.co/json/')
-    const dadosLocal = await respostaLocal.json()
-    if (dadosLocal.ip) {
-      ipUsuario = dadosLocal.ip
-      localUsuario = `${dadosLocal.city}, ${dadosLocal.region} - ${dadosLocal.country_name}`
-    }
-  } catch (e) {
-    console.warn('Falha ao buscar localização.')
-  }
+  
   const infoDispositivo = navigator.userAgent
   isCadastrandoUsuario.value = true
 
@@ -1108,12 +1099,19 @@ const uploadDocumentoCofre = async () => {
       mostrarFeedback('Imagens não podem exceder 50MB.', 'erro')
     return
   }
-  if(fileToUpload.value.type.endsWith('pdf') && fileToUpload.value.size > 5 * 1024 * 1024) {
-    mostrarFeedback('PDFs não podem exceder 5MB.', 'erro')
+  if(fileToUpload.value.type.endsWith('pdf') && fileToUpload.value.size > 2 * 1024 * 1024) {
+    mostrarFeedback('PDFs não podem exceder 2MB.', 'erro')
     return
   }
-  if(fileToUpload.value.type != 'pdf' && fileToUpload.value.type != 'image/jpeg' && fileToUpload.value.type != 'image/png' ){
-    return mostrarFeedback('Tipo de arquivo não permitidos.', 'erro')
+  if (
+    fileToUpload.value.type !== 'application/pdf' && 
+    fileToUpload.value.type !== 'image/jpeg' && 
+    fileToUpload.value.type !== 'image/png' && 
+    fileToUpload.value.type !== 'image/webp'
+  ) {
+    mostrarFeedback('Tipo de arquivo não permitido. Aceitamos apenas PDF, JPG, PNG e WEBP.', 'erro');
+    limparPreview();
+    return;
   }
 
   uploading.value = true
