@@ -200,17 +200,28 @@ const handleLogin = async () => {
     }
 
     try {
-      await supabase.from('historico_logins').insert([{
+      const { error: historyError } = await supabase.from('historico_logins').insert([{
         user_id: authData.user.id,
         user_email: email.value,
         ip: ipUsuario,
         localizacao: localUsuario,
         dispositivo: infoDispositivo
       }])
-    } catch (e) {
-      console.warn('Falha ao registrar log de login:', e)
-    } finally {
+
+      // Se a trigger no Postgres disparar o RAISE EXCEPTION, cairá aqui
+      if (historyError) {
+        throw new Error(historyError.message);
+      }
+
+      // Tudo certo, as credenciais e o local batem
       router.push('/home')
+
+    } catch (e) {
+      console.warn('Falha na validação de segurança:', e)
+      errorMessage.value = 'Acesso bloqueado: Dispositivo ou localização não autorizados.'
+      
+      // Desloga o usuário imediatamente pois ele não passou na verificação de local
+      await supabase.auth.signOut()
     }
   }
 
