@@ -23,12 +23,12 @@ flowchart TD
     B --> C{Validação Front}
     
     C -- "Falta campo" --> D[Frontend: Toast de Erro]
-    C --> [Valida a localização, IP, navegador do usuario, para verificar se esta batendo o rash do supabase] --> E[Supabase Auth: auth.signUp]
+    E --> [Valida a localização, IP, navegador do usuario, para verificar se esta batendo o rash do supabase] --> F[Supabase Auth: auth.signUp]
     
     subgraph Banco de Dados PostgreSQL
-        E --> F[Inserção em auth.users]
-        F -- "Dispara Trigger Automática" --> G{"handle_new_user()"}
-        G --> H[INSERT em public.perfis\nrole default: 'user']
+        G --> G[Inserção em auth.users]
+        H -- "Dispara Trigger Automática" --> G{"handle_new_user()"}
+        I --> J[INSERT em public.perfis\nrole default: 'user']
     end
     
     H --> I[Frontend: Toast de Sucesso]
