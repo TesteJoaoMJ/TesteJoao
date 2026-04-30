@@ -27,7 +27,7 @@
         
         <template v-if="userRole === 'adimim' && !isLoading">
           <select class="input-select" @change="lidarComAcoesRapidas($event)">
-            <option value="" disabled selected >Ações Rápidas</option>
+            <option value="" disabled selected class="input-select-option">Ações Rápidas</option>
             <option value="novo_usuario" class="input-select-option">Novo Usuário (Acesso)</option>
             <option value="novo_setor" class="input-select-option">Cadastrar Novo Setor</option>
           </select>
@@ -260,10 +260,10 @@
                 </div>
                 <div class="input-field">
                   <label>Nível de Acesso (Role)</label>
-                  <select v-model="novoUsuarioForm.role" required>
-                    <option value="user">Usuário Comum (Visualização)</option>
-                    <option value="rh">Gestor RH (Edição)</option>
-                    <option value="adimim">Administrador (Total)</option>
+                  <select v-model="novoUsuarioForm.role" required class="input-select">
+                    <option value="user" selected class="input-select-option">Usuário Comum (Visualização)</option>
+                    <option value="rh" selected class="input-select-option">Gestor RH (Edição)</option>
+                    <option value="adimim" selected class="input-select-option">Administrador (Total)</option>
                   </select>
                 </div>
               </div>

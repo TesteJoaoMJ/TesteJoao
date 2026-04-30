@@ -17,6 +17,9 @@ Abaixo está o mapeamento de onde cada informação surge no frontend e como é 
 * **Campos Principais:**
   * `id`: UUID único do usuário.
   * `role`: Define o nível de permissão. Valores aceitos: `'adimim'`, `'rh'`, `'user'`. O sistema força o valor inicial como `'user'`.
+```mermaid
+    Cadastro no sistema-->Validação de dados-->Tudo OK Inseri no supabase-->Caso não, mostra erro com toast personalizado no front;
+```
 
 ### 2. Cadastro de Colaboradores (`public.colaboradores`)
 * **De onde surge:** Formulário principal de cadastro ou edição de funcionários no frontend.
