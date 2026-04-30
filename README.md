@@ -18,9 +18,12 @@ Abaixo está o mapeamento de onde cada informação surge no frontend e como é 
   * `id`: UUID único do usuário.
   * `role`: Define o nível de permissão. Valores aceitos: `'adimim'`, `'rh'`, `'user'`. O sistema força o valor inicial como `'user'`.
 ```mermaid
-    Cadastro no sistema-->Validação de dados-->Tudo OK Inseri no supabase-->Caso não, mostra erro com toast personalizado no front;
+flowchart TD
+    A[Cadastro no sistema] --> B{Validação de dados}
+    
+    B -- Tudo OK --> C[(Inserir no Supabase)]
+    B -- Caso não --> D[Mostra erro com toast personalizado no front]
 ```
-
 ### 2. Cadastro de Colaboradores (`public.colaboradores`)
 * **De onde surge:** Formulário principal de cadastro ou edição de funcionários no frontend.
 * **Fluxo:** O frontend envia um payload (JSON) direto para esta tabela via API do Supabase.
