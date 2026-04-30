@@ -656,6 +656,18 @@ const cadastrarNovoUsuarioAuth = async () => {
   let localUsuario = ''
   
   const infoDispositivo = navigator.userAgent
+
+  try {
+    const respostaLocal = await fetch('https://ipapi.co/json/')
+    const dadosLocal = await respostaLocal.json()
+    if (dadosLocal.ip) {
+      ipUsuario = dadosLocal.ip
+      localUsuario = `${dadosLocal.city}, ${dadosLocal.region} - ${dadosLocal.country_name}`
+    }
+  } catch (e) {
+    console.warn('Falha ao buscar localização.')
+  }
+
   isCadastrandoUsuario.value = true
 
   // CORREÇÃO: Chamada correta ao signUp com metadados para o trigger do banco
@@ -1295,90 +1307,5 @@ const imprimirDossie = (c: any) => {
 </script>
 
 <style scoped>
-@import '../assets/homecss.css';
-
-.ExportacaoSelect {
-  background-color: var(--bg-surface-hover);
-  color: var(--text-main);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 0.9rem;
-  outline: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  appearance: none; 
-  -webkit-appearance: none;
-}
-
-.ExportarCSV, .ExportarCSV:hover {
-  background-color: var(--success-bg);
-  color: var(--text-main);
-  text-align: center;  
-}
-.ExportarPDF, .ExportarPDF:hover {
-  background-color: var(--danger-bg);
-  color: var(--text-main);
-  text-align: center;  
-}
-
-.input-select {
-  background-color: var(--bg-surface-hover);
-  color: var(--text-main);
-  border: 1px solid var(--border);
-  padding: 6px 12px;
-  font-size: 0.9rem;
-  outline: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  appearance: none; 
-  -webkit-appearance: none;
-}
-
-.input-select-option, .input-select-option:hover {
-  background-color: var(--bg-surface);
-  color: var(--text-main);
-  text-align: center;
-}
-
-/* Tratamento de Erros visuais nos Forms */
-input.error, select.error {
-  border-color: var(--danger) !important;
-  background-color: var(--danger-bg);
-}
-
-.error-message {
-  color: var(--danger);
-  font-size: 0.75rem;
-  margin-top: 4px;
-  display: block;
-  font-weight: 500;
-}
-
-.search-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.search-icon {
-  position: absolute;
-  left: 12px;
-  color: #888; /* Adjust to fit your theme */
-  pointer-events: none;
-}
-
-.search-wrapper .input-search {
-  background-color: var(--bg-primary); /* Sets background to --bg-primary */
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  height: 40px;
-  width: 100%;
-  padding-left: 38px; /* Crucial: Prevents text from hiding behind the SVG */
-  color: var(--text-main);
-  transition: all 0.3s ease;
-  appearance: none;
-  -webkit-appearance: none;
-}
+@import '../assets/home.css';
 </style>
