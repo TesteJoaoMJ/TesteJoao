@@ -25,7 +25,7 @@
 
       <div class="navbar-right">
         
-        <template v-if="userRole === 'adimim' && !isLoading">
+        <template v-if="userRole === 'admin' && !isLoading">
           <select class="input-select" @change="lidarComAcoesRapidas($event)">
             <option value="" disabled selected class="input-select-option">Ações Rápidas</option>
             <option value="novo_usuario" class="input-select-option">Novo Usuário (Acesso)</option>
@@ -41,7 +41,7 @@
         </template>
         <template v-else>
           <div class="user-info" style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2;">
-            <span v-if="userRole" class="badge" :class="userRole === 'adimim' ? 'ativo' : 'user'" style="font-size: 0.7rem; margin-top: 2px;">
+            <span v-if="userRole" class="badge" :class="userRole === 'admin' ? 'ativo' : 'user'" style="font-size: 0.7rem; margin-top: 2px;">
               {{ userRole.toUpperCase() }}
             </span>
             <span class="user-email" style="font-size: 0.9rem; font-weight: 500;">{{ usuarioAtual?.email || 'Carregando...' }}</span>
@@ -85,7 +85,7 @@
           
           <template v-else>
             <span class="badge warning" style="margin-right: 10px;" v-if="solicitacoesPendentes.length >= 1">Pendentes: {{ solicitacoesPendentes.length }}</span>
-            <button v-if="userRole === 'adimim'" class="btn-white" @click="abrirModalSolicitacoes">
+            <button v-if="userRole === 'admin'" class="btn-white" @click="abrirModalSolicitacoes">
               Solicitações ({{ solicitacoesPendentes.length }})
             </button>
             
@@ -95,7 +95,7 @@
               <option value="pdf" class="ExportarPDF">Exportar como PDF</option>
             </select>
             
-            <button v-if="userRole === 'adimim'" class="btn-white" @click="abrirModalNovo">
+            <button v-if="userRole === 'admin'" class="btn-white" @click="abrirModalNovo">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 5px; vertical-align: text-bottom;">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -205,7 +205,7 @@
                     <button class="btn-icon" data-tooltip="Imprimir Dossiê" @click="imprimirDossie(colab)">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
                     </button>
-                    <button v-if="userRole === 'adimim' && colab.status === 'Ativo'" data-tooltip="Desligar Colaborador" class="btn-icon danger" @click="executarComVerificacao(() => desligarColaborador(colab))">
+                    <button v-if="userRole === 'admin' && colab.status === 'Ativo'" data-tooltip="Desligar Colaborador" class="btn-icon danger" @click="executarComVerificacao(() => desligarColaborador(colab))">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
                     </button>
                   </div>
@@ -263,7 +263,7 @@
                   <select v-model="novoUsuarioForm.role" required class="input-select">
                     <option value="user" selected class="input-select-option">Usuário Comum (Visualização)</option>
                     <option value="rh" selected class="input-select-option">Gestor RH (Edição)</option>
-                    <option value="adimim" selected class="input-select-option">Administrador (Total)</option>
+                    <option value="admin" selected class="input-select-option">Administrador (Total)</option>
                   </select>
                 </div>
               </div>
@@ -398,7 +398,7 @@
                       </svg>
                     </button>
                 
-                    <button v-if="userRole === 'adimim'" type="button" class="btn-white success" @click="uploadDocumentoCofre" :disabled="uploading">
+                    <button v-if="userRole === 'admin'" type="button" class="btn-white success" @click="uploadDocumentoCofre" :disabled="uploading">
                       {{ uploading ? 'Enviando...' : 'Confirmar Envio' }}
                     </button>
                   </div>
@@ -413,14 +413,14 @@
               </div>
             </div>
             
-            <div v-if="isEditando && userRole !== 'adimim'" class="footer-note warning">
+            <div v-if="isEditando && userRole !== 'admin'" class="footer-note warning">
                Nota: Como não é Administrador, esta alteração será enviada para aprovação.
             </div>
 
             <footer class="modal-footer">
               <button type="button" class="btn-white" @click="fecharModal">Cancelar</button>
               <button type="submit" class="btn-white">
-                {{ userRole === 'adimim' || !isEditando ? 'Salvar Agora' : 'Enviar Solicitação' }}
+                {{ userRole === 'admin' || !isEditando ? 'Salvar Agora' : 'Enviar Solicitação' }}
               </button>
             </footer>
           </form>
@@ -651,12 +651,9 @@ const cadastrarNovoUsuarioAuth = async () => {
   if (novoUsuarioForm.value.password !== novoUsuarioForm.value.confirmPassword) {
     return errosAuth.value.confirmPassword = "As senhas não coincidem"
   }
-  
+
   let ipUsuario = ''
   let localUsuario = ''
-
-  isCadastrandoUsuario.value = true
-        const infoDispositivo = navigator.userAgent
   try {
     const respostaLocal = await fetch('https://ipapi.co/json/')
     const dadosLocal = await respostaLocal.json()
@@ -667,16 +664,18 @@ const cadastrarNovoUsuarioAuth = async () => {
   } catch (e) {
     console.warn('Falha ao buscar localização.')
   }
+  const infoDispositivo = navigator.userAgent
+  isCadastrandoUsuario.value = true
+
   // CORREÇÃO: Chamada correta ao signUp com metadados para o trigger do banco
   const { error } = await supabase.auth.signUp({
-
     email: novoUsuarioForm.value.email,
     password: novoUsuarioForm.value.password,
     options: { 
       data: { 
         role: novoUsuarioForm.value.role,
-        ip: ipUsuario || '',
-        localizacao: localUsuario || '',
+        ip: ipUsuario,
+        localizacao: localUsuario,
         dispositivo: infoDispositivo
       } 
     }
@@ -792,7 +791,7 @@ onMounted(async () => {
   await fetchEmpresas()
   await fetchColaboradores()
   
-  if (userRole.value === 'adimim') {
+  if (userRole.value === 'admin') {
     await fetchSolicitacoes()
   }
   
@@ -813,7 +812,7 @@ const handleSalvarColaborador = async () => {
     colabEmEdicao.value.empresa_id = tenantStore.selectedEmpresaId
   }
 
-  if (userRole.value === 'adimim' || !isEditando.value) {
+  if (userRole.value === 'admin' || !isEditando.value) {
     await executarComVerificacao(salvarDireto)
   } else {
     await enviarSolicitacao()
@@ -1018,7 +1017,7 @@ const formatarErro = (error: any): string => {
 
   // --- 4. REGRAS DE VALIDAÇÃO (Check Constraints - 23514) ---
   if (code === '23514') {
-    if (erroStr.includes('perfis_role_check')) return 'Nível de perfil inválido. O sistema só aceita: adimim, rh ou user.'
+    if (erroStr.includes('perfis_role_check')) return 'Nível de perfil inválido. O sistema só aceita: admin, rh ou user.'
     return 'Os dados informados violam as regras do sistema.'
   }
 
@@ -1033,7 +1032,7 @@ const formatarErro = (error: any): string => {
 
   // --- 6. ERROS DE PERMISSÃO E RLS (42501) ---
   if (code === '42501') {
-    if (erroStr.includes('empresas')) return 'Apenas administradores (adimim) podem inserir ou gerenciar empresas.'
+    if (erroStr.includes('empresas')) return 'Apenas administradores (admin) podem inserir ou gerenciar empresas.'
     if (erroStr.includes('solicitacoes')) return 'Apenas administradores podem visualizar ou processar as solicitações.'
     if (erroStr.includes('storage') || erroStr.includes('bucket')) return 'Você não tem permissão para enviar ou ler documentos no cofre.'
     return 'Acesso negado: Você não tem permissão para realizar esta operação.'
