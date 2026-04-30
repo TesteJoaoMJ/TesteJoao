@@ -25,13 +25,26 @@
 
       <div class="navbar-right">
         
-        <template v-if="userRole === 'admin' && !isLoading">
-          <select class="input-select" @change="lidarComAcoesRapidas($event)">
-            <option value="" disabled selected class="input-select-option">Ações Rápidas</option>
-            <option value="novo_usuario" class="input-select-option">Novo Usuário (Acesso)</option>
-            <option value="novo_setor" class="input-select-option">Cadastrar Novo Setor</option>
-          </select>
-        </template>
+      <template v-if="userRole === 'admin' && !isLoading">
+        <!-- Container opcional para agrupar e estilizar os botões -->
+        <div class="acoes-rapidas-botoes"> 
+          
+          <button 
+            class="btn-acao" 
+            @click="lidarComAcoesRapidas('novo_usuario')"
+          >
+            Novo Usuário (Acesso)
+          </button>
+          
+          <button 
+            class="btn-acao" 
+            @click="lidarComAcoesRapidas('novo_setor')"
+          >
+            Cadastrar Novo Setor
+          </button>
+          
+        </div>
+      </template>
 
         <div class="nav-divider"></div>
         
@@ -231,53 +244,10 @@
           </div>
         </div>
       </Transition>
-    </main>
 
-    <Transition name="fade">
-      <div v-if="isModalNovoUsuarioOpen" class="modal-backdrop" @click.self="fecharModalNovoUsuario">
-        <div class="modal-card small-modal">
-          <header class="modal-header">
-            <h3>👤 Criar Usuário de Acesso</h3>
-            <button class="btn-close" @click="fecharModalNovoUsuario">✕</button>
-          </header>
-          <div class="form-body">
-            <form @submit.prevent="cadastrarNovoUsuarioAuth">
-              <div class="form-vertical">
-                <div class="input-field">
-                  <label>E-mail Corporativo</label>
-                  <input type="email" v-model="novoUsuarioForm.email" :class="{ error: errosAuth.email }" required />
-                  <p v-if="errosAuth.email" class="error-msg">{{ errosAuth.email }}</p>
-                </div>
-                <div class="input-field">
-                  <label>Senha Provisória</label>
-                  <input type="password" v-model="novoUsuarioForm.password" :class="{ error: errosAuth.password }" required />
-                  <p v-if="errosAuth.password" class="error-msg">{{ errosAuth.password }}</p>
-                </div>
-                <div class="input-field">
-                  <label>Confirmar Senha Provisória</label>
-                  <input type="password" v-model="novoUsuarioForm.confirmPassword" :class="{ error: errosAuth.confirmPassword }" required />
-                  <p v-if="errosAuth.confirmPassword" class="error-msg">{{ errosAuth.confirmPassword }}</p>
-                </div>
-                <div class="input-field">
-                  <label>Nível de Acesso (Role)</label>
-                  <select v-model="novoUsuarioForm.role" required class="input-select">
-                    <option value="user" selected class="input-select-option">Usuário Comum (Visualização)</option>
-                    <option value="rh" selected class="input-select-option">Gestor RH (Edição)</option>
-                    <option value="admin" selected class="input-select-option">Administrador (Total)</option>
-                  </select>
-                </div>
-              </div>
-              <footer class="modal-footer">
-                <button type="button" class="btn-white" @click="fecharModalNovoUsuario">Cancelar</button>
-                <button type="submit" class="btn-white success" :disabled="isCadastrandoUsuario">
-                  {{ isCadastrandoUsuario ? 'Processando...' : 'Confirmar Cadastro' }}
-                </button>
-              </footer>
-            </form>
-          </div>
-        </div>
-      </div>
-    </Transition>
+      <button class="btn-close" @click="IrparaAuditoria">Ir para auditoria</button>
+      <button class="btn-close" @click="IrparaDashBoard">Ir para DashBoard</button>
+    </main>
 
     <Transition name="fade">
       <div v-if="isModalNovoSetorOpen" class="modal-backdrop" @click.self="fecharModalNovoSetor">
@@ -588,25 +558,6 @@ const filePreviewType = ref<string>('')
 const fileInput = ref<HTMLInputElement | null>(null)
 const tipoDocumento = ref<string>('')
 
-const isModalNovoUsuarioOpen = ref(false)
-const isCadastrandoUsuario = ref(false)
-
-const novoUsuarioForm = ref({ 
-  email: '', 
-  password: '', 
-  confirmPassword: '', 
-  role: 'user',
-  ip: '',
-  localizacao: '',
-  dispositivo: ''
-})
-
-const errosAuth = ref({ 
-  email: '', 
-  password: '', 
-  confirmPassword: '' 
-})
-
 const isModalNovoSetorOpen = ref(false)
 const isCadastrandoSetor = ref(false)
 const novoSetorNome = ref('')
@@ -635,80 +586,13 @@ const timelineFiltrada = computed(() => {
 const totalPaginas = computed(() => Math.ceil(totalColaboradores.value / itensPorPagina))
 
 // --- FUNÇÕES DE AÇÕES RÁPIDAS DO ADMIN ---
-const lidarComAcoesRapidas = (event: Event) => {
-  const select = event.target as HTMLSelectElement
-  const acao = select.value
 
+// --- FUNÇÕES DE AÇÕES RÁPIDAS DO ADMIN ---
+const lidarComAcoesRapidas = (acao: string) => {
   if (acao === 'novo_usuario') {
-    abrirModalNovoUsuarioAuth()
+    router.push('/usuarios')
   } else if (acao === 'novo_setor') {
     abrirModalNovoSetor()
-  }
-
-  // Reseta o select para o estado inicial para permitir novos cliques na mesma opção depois
-  select.value = ''
-}
-
-// Lógica Novo Usuário (Supabase Auth)
-const abrirModalNovoUsuarioAuth = () => {
-  novoUsuarioForm.value = { email: '', password: '', confirmPassword: '', role: 'user', ip: '', localizacao: '', dispositivo: '' }
-  errosAuth.value = { email: '', password: '', confirmPassword: '' }
-  isModalNovoUsuarioOpen.value = true
-}
-
-const fecharModalNovoUsuario = () => {
-  isModalNovoUsuarioOpen.value = false
-}
-
-const cadastrarNovoUsuarioAuth = async () => {
-  // Limpa erros anteriores
-  errosAuth.value = { email: '', password: '', confirmPassword: '' }
-
-  // Validações básicas de UX
-  if (!novoUsuarioForm.value.email.includes('@')) return errosAuth.value.email = "E-mail inválido"
-  if (novoUsuarioForm.value.password.length < 6) return errosAuth.value.password = "Mínimo 6 caracteres"
-  if (novoUsuarioForm.value.password !== novoUsuarioForm.value.confirmPassword) {
-    return errosAuth.value.confirmPassword = "As senhas não coincidem"
-  }
-
-  const infoDispositivo = navigator.userAgent
-  let ipUsuario = 'Desconhecido'
-  let localUsuario = 'Desconhecido'
-
-  try {
-    const respostaLocal = await fetch('https://ipinfo.io/json')
-    const dadosLocal = await respostaLocal.json()
-      
-    if (dadosLocal.ip) {
-      ipUsuario = dadosLocal.ip
-      localUsuario = `${dadosLocal.city}, ${dadosLocal.region} - ${dadosLocal.country}`
-    }
-  } catch (e) {
-    console.warn('Falha ao buscar localização: ', e)
-  }
-
-
-  // 2. O cadastro só deve prosseguir após o bloco acima
-  const { error } = await supabase.auth.signUp({
-    email: novoUsuarioForm.value.email,
-    password: novoUsuarioForm.value.password,
-    options: { 
-      data: { 
-        role: novoUsuarioForm.value.role,
-        ip: ipUsuario,
-        localizacao: localUsuario,
-        dispositivo: infoDispositivo
-      } 
-    }
-  });
-
-  isCadastrandoUsuario.value = false
-
-  if (error) {
-    mostrarFeedback(error, 'erro')
-  } else {
-    mostrarFeedback("Usuário criado com sucesso!", 'sucesso')
-    fecharModalNovoUsuario()
   }
 }
 
@@ -773,6 +657,13 @@ const proximaPagina = () => {
     fetchColaboradores();
   }
 };
+
+const IrparaAuditoria = () => {
+  router.push('/auditoria')
+}
+const IrparaDashBoard = () => {
+  router.push('/dashboard')
+}
 
 const paginaAnterior = () => {
   if (paginaAtual.value > 1) { 
